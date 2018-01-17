@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
     //按钮
     OpenButton = new QPushButton(tr("打开串口"));
     SendButton = new QPushButton(tr("发送"));
+    SendButton->setDisabled(true);
 
     connect(OpenButton, QPushButton::clicked, this, OpenSerial);
 
@@ -116,6 +117,7 @@ void MainWindow::CheckSerials()
         COMBox->addItem(tr("(空)"));
         COMBox->setDisabled(true);
         OpenButton->setDisabled(true);
+        emit CloseSerial();
     }
 }
 
@@ -127,6 +129,8 @@ MainWindow::~MainWindow()
 void MainWindow::serialOpened()
 {
     OpenButton->setText(tr("关闭串口"));
+    COMBox->setDisabled(true);
+    SendButton->setDisabled(false);
     disconnect(OpenButton, QPushButton::clicked, this, OpenSerial);
     connect(OpenButton, QPushButton::clicked, this, CloseSerial);
 }
@@ -139,6 +143,8 @@ void MainWindow::serialNotOpened()
 void MainWindow::serialClosed()
 {
     OpenButton->setText(tr("打开串口"));
+    COMBox->setDisabled(false);
+    SendButton->setDisabled(true);
     disconnect(OpenButton, QPushButton::clicked, this, CloseSerial);
     connect(OpenButton, QPushButton::clicked, this, OpenSerial);
 }
