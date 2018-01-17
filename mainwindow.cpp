@@ -29,6 +29,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     //发送与接受区域
     RecvArea = new QTextEdit();
+    RecvArea->setReadOnly(true);
+    RecvArea->setText(tr("Hello"));
     SendArea = new QTextEdit();
 
     //按钮
@@ -78,6 +80,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(this, setStopBits, serialController, SerialController::getStopbits);
     connect(this, setDataBits, serialController, SerialController::getDatabits);
     connect(this, setParity, serialController, SerialController::getParity);
+    connect(BaudrateBox, QComboBox::currentTextChanged, serialController, SerialController::getBaudrate);
+    connect(StopbitsBox, QComboBox::currentTextChanged, serialController, SerialController::getStopbits);
+    connect(DatabitsBox, QComboBox::currentTextChanged, serialController, SerialController::getDatabits);
+    connect(ParityBox, QComboBox::currentTextChanged, serialController, SerialController::getParity);
 }
 
 void MainWindow::CheckSerials()
