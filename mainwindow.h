@@ -4,7 +4,7 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QGridLayout>
-#include <QTextEdit>
+#include <QPlainTextEdit>
 #include <QPushButton>
 #include <QTimer>
 #include <QSerialPortInfo>
@@ -31,6 +31,7 @@ signals:
     void setStopBits(QString stopbits);
     void setDataBits(QString databits);
     void setParity(QString parity);
+    void sendData(QString content);
 
 public slots:
     void serialOpened();
@@ -42,7 +43,7 @@ private:
     QStringList COMList, BaudrateList, StopbitsList, DatabitsList, ParityList;
     QLabel *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel;
     QGridLayout *layout;
-    QTextEdit *RecvArea, *SendArea;
+    QPlainTextEdit *RecvArea, *SendArea;
     QPushButton *OpenButton, *SendButton;
     QTimer *CheckTimer;
     SerialController *serialController;
@@ -50,6 +51,7 @@ private:
 
     void OpenSerial();
     void CloseSerial();
+    void SendContent();
 };
 
 #endif // MAINWINDOW_H

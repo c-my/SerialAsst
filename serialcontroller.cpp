@@ -11,8 +11,7 @@ void SerialController::openSerial(QString name)
     if(serial->open(QIODevice::ReadWrite))
     {
         //串口打开成功
-        serial->waitForBytesWritten();
-        serial->waitForReadyRead();
+        serial->setDataTerminalReady(false);
         emit openSuccess();
     }
     else
@@ -66,4 +65,19 @@ void SerialController::getParity(QString parity)
     else if(parity == tr("偶校验"))
         serial->setParity(QSerialPort::EvenParity);
     qDebug()<<"The parity now is "<<parity;
+}
+
+void SerialController::writeData(QString content)
+{
+    if(serial->isWritable())
+    {
+        qDebug()<<"Writing content: "<< content;
+        QByteArray data = content.toUtf8();
+        qDebug()<<"Byte: "<<data.toHex();
+        qint64 result = serial->write(data);
+        if(result == -1)
+            emit writeFailed();
+        else
+            emit writeSuccess(result);
+    }
 }

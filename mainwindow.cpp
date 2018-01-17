@@ -28,10 +28,10 @@ MainWindow::MainWindow(QWidget *parent)
     ParityLabel = new QLabel(tr("校验位"));
 
     //发送与接受区域
-    RecvArea = new QTextEdit();
+    RecvArea = new QPlainTextEdit();
     RecvArea->setReadOnly(true);
-    RecvArea->setText(tr("Hello"));
-    SendArea = new QTextEdit();
+    //RecvArea->setText(tr("Hello"));
+    SendArea = new QPlainTextEdit();
 
     //按钮
     OpenButton = new QPushButton(tr("打开串口"));
@@ -84,6 +84,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(StopbitsBox, QComboBox::currentTextChanged, serialController, SerialController::getStopbits);
     connect(DatabitsBox, QComboBox::currentTextChanged, serialController, SerialController::getDatabits);
     connect(ParityBox, QComboBox::currentTextChanged, serialController, SerialController::getParity);
+    connect(this, sendData, serialController, SerialController::writeData);
+    connect(SendButton, QPushButton::clicked, this, SendContent);
 }
 
 void MainWindow::CheckSerials()
@@ -147,12 +149,17 @@ void MainWindow::OpenSerial()
     emit requestOpen(portName);
     emit setBaudRate(BaudrateBox->currentText());
     emit setStopBits(StopbitsBox->currentText());
-    emit setDataBits(StopbitsBox->currentText());
+    emit setDataBits(DatabitsBox->currentText());
     emit setParity(ParityBox->currentText());
-
 }
 
 void MainWindow::CloseSerial()
 {
     emit requestClose();
+}
+
+void MainWindow::SendContent()
+{
+    QString content = SendArea->toPlainText();
+    emit sendData(content);
 }
