@@ -35,6 +35,8 @@ MainWindow::MainWindow(QWidget *parent)
     OpenButton = new QPushButton(tr("打开串口"));
     SendButton = new QPushButton(tr("发送"));
 
+    connect(OpenButton, QPushButton::clicked, this, OpenSerial);
+
     //初始化布局
     layout = new QGridLayout(this);
     layout->addWidget(BaudrateLabel, 1, 0);
@@ -63,7 +65,19 @@ MainWindow::MainWindow(QWidget *parent)
     CheckSerials();
 
     //开始串口进程
-//    SerialThr.start();
+    serialController = new SerialController;
+    serialController->moveToThread(&SerialThr);
+    SerialThr.start();
+
+    connect(this, requestOpen, serialController, SerialController::openSerial);
+    connect(this, requestClose, serialController, SerialController::closeSerial);
+    connect(serialController, SerialController::openSuccess, this, serialOpened);
+    connect(serialController, SerialController::openFailed, this, serialNotOpened);
+    connect(serialController, SerialController::closeSuccess, this, serialClosed);
+    connect(this, setBaudRate, serialController, SerialController::getBaudrate);
+    connect(this, setStopBits, serialController, SerialController::getStopbits);
+    connect(this, setDataBits, serialController, SerialController::getDatabits);
+    connect(this, setParity, serialController, SerialController::getParity);
 }
 
 void MainWindow::CheckSerials()
@@ -83,6 +97,7 @@ void MainWindow::CheckSerials()
             COMBox->setDisabled(false);
             COMBox->clear();
             COMBox->addItems(COMList);
+            OpenButton->setDisabled(false);
         }
     }
     else
@@ -91,10 +106,47 @@ void MainWindow::CheckSerials()
         COMList.clear();
         COMBox->addItem(tr("(空)"));
         COMBox->setDisabled(true);
+        OpenButton->setDisabled(true);
     }
 }
 
 MainWindow::~MainWindow()
 {
+    SerialThr.terminate();
+}
 
+void MainWindow::serialOpened()
+{
+    OpenButton->setText(tr("关闭串口"));
+    disconnect(OpenButton, QPushButton::clicked, this, OpenSerial);
+    connect(OpenButton, QPushButton::clicked, this, CloseSerial);
+}
+
+void MainWindow::serialNotOpened()
+{
+    qDebug()<<"打开失败";
+}
+
+void MainWindow::serialClosed()
+{
+    OpenButton->setText(tr("打开串口"));
+    disconnect(OpenButton, QPushButton::clicked, this, CloseSerial);
+    connect(OpenButton, QPushButton::clicked, this, OpenSerial);
+}
+
+void MainWindow::OpenSerial()
+{
+    QString portName = COMBox->currentText().split(' ')[0];
+    qDebug()<<portName;
+    emit requestOpen(portName);
+    emit setBaudRate(BaudrateBox->currentText());
+    emit setStopBits(StopbitsBox->currentText());
+    emit setDataBits(StopbitsBox->currentText());
+    emit setParity(ParityBox->currentText());
+
+}
+
+void MainWindow::CloseSerial()
+{
+    emit requestClose();
 }

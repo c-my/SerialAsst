@@ -25,7 +25,9 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    serialcontroller.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    serialcontroller.h
