@@ -17,6 +17,7 @@ signals:
     void closeSuccess();    //串口关闭成功
     void writeSuccess(int len); //串口发送成功 len为成功发送的字节
     void writeFailed(); //串口发送失败
+    void recvData(QByteArray content); //发送接收到的数据
 
 public slots:
     void openSerial(QString name);
@@ -26,6 +27,7 @@ public slots:
     void getDatabits(QString databits); //改变数据为
     void getParity(QString parity);     //改变校验位
     void writeData(QString content);     //发送数据
+    void handleRecv();                  //接受数据
 
 private:
     QSerialPort *serial;

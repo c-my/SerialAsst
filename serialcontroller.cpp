@@ -3,6 +3,7 @@
 SerialController::SerialController(QObject *parent) : QObject(parent)
 {
     serial = new QSerialPort(this);
+    connect(serial, QSerialPort::readyRead, this, handleRecv);
 }
 
 void SerialController::openSerial(QString name)
@@ -71,13 +72,16 @@ void SerialController::writeData(QString content)
 {
     if(serial->isWritable())
     {
-        qDebug()<<"Writing content: "<< content;
-        QByteArray data = content.toUtf8();
-        qDebug()<<"Byte: "<<data.toHex();
-        qint64 result = serial->write(data);
+        qint64 result = serial->write(content.toLatin1().data());
         if(result == -1)
             emit writeFailed();
         else
             emit writeSuccess(result);
     }
+}
+
+void SerialController::handleRecv()
+{
+    QByteArray data = serial->readAll();
+    emit recvData(data);
 }

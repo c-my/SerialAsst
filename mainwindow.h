@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QGridLayout>
+#include <QTextEdit>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QTimer>
@@ -34,16 +35,17 @@ signals:
     void sendData(QString content);
 
 public slots:
-    void serialOpened();
-    void serialNotOpened();
-    void serialClosed();
+    void serialOpened();    //串口打开成功
+    void serialNotOpened(); //串口打开失败
+    void serialClosed();    //串口关闭
+    void getRecv(QByteArray recv); //串口接受数据
 
 private:
     QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
     QStringList COMList, BaudrateList, StopbitsList, DatabitsList, ParityList;
     QLabel *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel;
     QGridLayout *layout;
-    QPlainTextEdit *RecvArea, *SendArea;
+    QTextEdit *RecvArea, *SendArea;
     QPushButton *OpenButton, *SendButton;
     QTimer *CheckTimer;
     SerialController *serialController;
