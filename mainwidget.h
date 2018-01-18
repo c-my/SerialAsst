@@ -42,6 +42,9 @@ public slots:
     void serialNotOpened(); //串口打开失败
     void serialClosed();    //串口关闭
     void getRecv(QByteArray recv); //串口接受数据
+    void OpenSerial();
+    void CloseSerial();
+    void ClearRecv();
 
 private:
     QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
@@ -49,13 +52,10 @@ private:
     QLabel *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel;
     QGridLayout *layout;
     QTextEdit *RecvArea, *SendArea;
-    QPushButton *OpenButton, *SendButton;
+    QPushButton *OpenButton, *SendButton, *ClearButton;
     QTimer *CheckTimer;
     SerialController *serialController;
     QThread SerialThr;
-
-    void OpenSerial();
-    void CloseSerial();
 
 };
 

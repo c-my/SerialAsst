@@ -36,7 +36,7 @@ MainWidget::MainWidget(QWidget *parent)
     RecvArea->setPalette(pal);
     SendArea = new QTextEdit();
     RecvArea->setFont(QFont(tr("Microsoft YaHei UI"), 10));
-    SendArea->setFont(QFont(tr("Microsoft YaHei UI"), 13));
+    SendArea->setFont(QFont(tr("Microsoft YaHei UI Light"), 13));
     SendArea->installEventFilter(this);
 
     //按钮
@@ -44,8 +44,11 @@ MainWidget::MainWidget(QWidget *parent)
     SendButton = new QPushButton(tr("发送"));
     SendButton->setDisabled(true);
     SendButton->setToolTip(tr("Ctrl+Enter"));
+    ClearButton = new QPushButton(tr("清除接收"));
 
     connect(OpenButton, QPushButton::clicked, this, OpenSerial);
+    connect(SendButton, QPushButton::clicked, this, SendContent);
+    connect(ClearButton, QPushButton::clicked, this, ClearRecv);
 
     //初始化布局
     layout = new QGridLayout(this);
@@ -62,6 +65,7 @@ MainWidget::MainWidget(QWidget *parent)
     layout->addWidget(SendButton, 5, 2, Qt::AlignRight);
     layout->addWidget(RecvArea, 0, 2, 3, 1);
     layout->addWidget(SendArea, 3, 2, 2, 1);
+    layout->addWidget(ClearButton, 0, 3);
     setLayout(layout);
 
     //计时器 初始化
@@ -91,7 +95,6 @@ MainWidget::MainWidget(QWidget *parent)
     connect(DatabitsBox, QComboBox::currentTextChanged, serialController, SerialController::getDatabits);
     connect(ParityBox, QComboBox::currentTextChanged, serialController, SerialController::getParity);
     connect(this, sendData, serialController, SerialController::writeData);
-    connect(SendButton, QPushButton::clicked, this, SendContent);
     connect(serialController, SerialController::recvData, this, getRecv);
 }
 
@@ -179,6 +182,11 @@ void MainWidget::OpenSerial()
 void MainWidget::CloseSerial()
 {
     emit requestClose();
+}
+
+void MainWidget::ClearRecv()
+{
+    RecvArea->clear();
 }
 
 void MainWidget::SendContent()
