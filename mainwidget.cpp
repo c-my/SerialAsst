@@ -63,6 +63,9 @@ MainWidget::MainWidget(QWidget *parent)
     TimerSpin->setMaximum(1000000);
     TimerSpin->setValue(1000);
 
+    connect(TimerSpin, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
+            this, changeSendTimer);
+
     //初始化布局
     vlayout = new QVBoxLayout();
     vlayout->addWidget(RecvArea, 7);
@@ -229,6 +232,11 @@ void MainWidget::ControlSendTimer(int state)
         SendTimer->stop();
     else if(state == 2)
         SendTimer->start(TimerSpin->value());
+}
+
+void MainWidget::changeSendTimer()
+{
+    ControlSendTimer(TimerBox->checkState());
 }
 
 void MainWidget::SendContent()

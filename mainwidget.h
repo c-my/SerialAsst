@@ -51,6 +51,7 @@ public slots:
     void ClearRecv();
     void detNewLine(int state);
     void ControlSendTimer(int state);
+    void changeSendTimer();
 
 private:
     QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
