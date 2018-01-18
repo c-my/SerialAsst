@@ -34,14 +34,15 @@ MainWidget::MainWidget(QWidget *parent)
     pal.setColor(QPalette::Base, Qt::black);
     pal.setColor(QPalette::Text, Qt::green);
     RecvArea->setPalette(pal);
-    //    RecvArea->setBackgroundRole();
-    //RecvArea->setText(tr("Hello"));
     SendArea = new QTextEdit();
+
+    SendArea->installEventFilter(this);
 
     //按钮
     OpenButton = new QPushButton(tr("打开串口"));
     SendButton = new QPushButton(tr("发送"));
     SendButton->setDisabled(true);
+    SendButton->setToolTip(tr("Ctrl+Enter"));
 
     connect(OpenButton, QPushButton::clicked, this, OpenSerial);
 
@@ -57,7 +58,7 @@ MainWidget::MainWidget(QWidget *parent)
     layout->addWidget(DatabitsBox, 3, 1);
     layout->addWidget(ParityBox, 4, 1);
     layout->addWidget(OpenButton, 5, 1);
-    layout->addWidget(SendButton, 5, 2);
+    layout->addWidget(SendButton, 5, 2, Qt::AlignRight);
     layout->addWidget(RecvArea, 0, 2, 3, 1);
     layout->addWidget(SendArea, 3, 2, 2, 1);
     setLayout(layout);
@@ -180,4 +181,25 @@ void MainWidget::SendContent()
 {
     QString content = SendArea->toPlainText();
     emit sendData(content);
+}
+
+bool MainWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    if(watched==SendArea&&event->type()==QEvent::KeyPress)
+    {
+        QKeyEvent *e = (QKeyEvent*)event;
+        if(e->modifiers()==Qt::ControlModifier)
+        {
+            switch (e->key())
+            {
+            case Qt::Key_Enter:
+            case Qt::Key_Return:
+                SendButton->click();
+                break;
+            default:
+                break;
+            }
+        }
+    }
+    return QWidget::eventFilter(watched, event);
 }

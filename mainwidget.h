@@ -24,6 +24,8 @@ public:
     MainWidget(QWidget *parent = 0);
     void CheckSerials();
     ~MainWidget();
+    void SendContent();
+    bool eventFilter(QObject *watched, QEvent *event);
 
 signals:
     void requestOpen(QString portName);
@@ -54,7 +56,7 @@ private:
 
     void OpenSerial();
     void CloseSerial();
-    void SendContent();
+
 };
 
 #endif // MAINWIDGET_H
