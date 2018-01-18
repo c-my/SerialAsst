@@ -8,11 +8,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     setCentralWidget(widget);
     statusbar->showMessage(tr("准备就绪"));
     connect(widget, MainWidget::sendStatus, this, setNewMsg);
+    timeLabel = new QLabel(statusbar);
+    statusBar()->addPermanentWidget(timeLabel);
+    timeLabel->setText(QDateTime::currentDateTime().toString());
+
+    connect(widget, MainWidget::sendDateTime, this, setDateTime);
     resize(900, 600);
 }
 
 void MainWindow::setNewMsg(QString msg)
 {
     statusBar()->showMessage(msg);
-    qDebug()<<this->size();
+}
+
+void MainWindow::setDateTime(QString datetime)
+{
+    timeLabel->setText(datetime);
 }

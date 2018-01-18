@@ -15,6 +15,7 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QThread>
+#include <QDateTime>
 #include "serialcontroller.h"
 
 #include <QDebug>
@@ -40,6 +41,7 @@ signals:
     void setParity(QString parity);
     void sendData(QString content);
     void sendStatus(QString status);    //更新statusbar
+    void sendDateTime(QString datetime);
 
 public slots:
     void serialOpened();    //串口打开成功

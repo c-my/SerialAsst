@@ -131,6 +131,7 @@ MainWidget::MainWidget(QWidget *parent)
 
 void MainWidget::CheckSerials()
 {
+    emit sendDateTime(QDateTime::currentDateTime().toString());
     QList<QSerialPortInfo> SerialList = QSerialPortInfo::availablePorts();
     if(!SerialList.isEmpty())
     {

@@ -16,10 +16,12 @@ signals:
 
 public slots:
     void setNewMsg(QString msg);
+    void setDateTime(QString datetime);
 
 private:
     MainWidget *widget;
     QStatusBar *statusbar;
+    QLabel *timeLabel;
 };
 
 #endif // MAINWINDOW_H
