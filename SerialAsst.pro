@@ -33,3 +33,6 @@ HEADERS += \
     serialcontroller.h \
     mainwidget.h \
     mainwindow.h
+
+RESOURCES += \
+    resource.qrc
