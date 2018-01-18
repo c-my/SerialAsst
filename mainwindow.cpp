@@ -8,7 +8,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     setCentralWidget(widget);
     statusbar->showMessage(tr("准备就绪"));
     connect(widget, MainWidget::sendStatus, this, setNewMsg);
-    resize(640, 500);
+    resize(900, 600);
 }
 
 void MainWindow::setNewMsg(QString msg)

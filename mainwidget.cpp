@@ -36,7 +36,7 @@ MainWidget::MainWidget(QWidget *parent)
     RecvArea->setPalette(pal);
     SendArea = new QTextEdit();
     RecvArea->setFont(QFont(tr("Microsoft YaHei UI"), 10));
-    SendArea->setFont(QFont(tr("Microsoft YaHei UI Light"), 13));
+    SendArea->setFont(QFont(tr("Microsoft YaHei UI Light"), 12));
     SendArea->installEventFilter(this);
 
     //按钮
@@ -50,28 +50,56 @@ MainWidget::MainWidget(QWidget *parent)
     connect(SendButton, QPushButton::clicked, this, SendContent);
     connect(ClearButton, QPushButton::clicked, this, ClearRecv);
 
+    //复选框
+    NewLineBox = new QCheckBox(tr("发送新行"));
+    TimerBox = new QCheckBox(tr("定时发送"));
+
+    connect(NewLineBox, QCheckBox::stateChanged, this, detNewLine);
+    connect(TimerBox, QCheckBox::stateChanged, this, ControlSendTimer);
+
+    //spinbox
+    TimerSpin = new QSpinBox();
+    TimerSpin->setSuffix(tr(" ms"));
+    TimerSpin->setMaximum(1000000);
+    TimerSpin->setValue(1000);
+
     //初始化布局
+    vlayout = new QVBoxLayout();
+    vlayout->addWidget(RecvArea, 7);
+    vlayout->addWidget(SendArea, 2);
+    hlayout = new QHBoxLayout();
+    hlayout->addWidget(NewLineBox, Qt::AlignRight);
+    hlayout->addWidget(TimerBox, Qt::AlignRight);
+    hlayout->addWidget(TimerSpin);
+    hlayout->addWidget(SendButton);
     layout = new QGridLayout(this);
+    layout->addWidget(COMBox, 0, 0, 1, 2);
     layout->addWidget(BaudrateLabel, 1, 0);
     layout->addWidget(StopbitsLabel, 2, 0);
     layout->addWidget(DatabitsLabel, 3, 0);
     layout->addWidget(ParityLabel, 4, 0);
-    layout->addWidget(COMBox, 0, 0, 1, 2);
-    layout->addWidget(BaudrateBox, 1,1);
+    layout->addWidget(BaudrateBox, 1, 1);
     layout->addWidget(StopbitsBox, 2, 1);
     layout->addWidget(DatabitsBox, 3, 1);
     layout->addWidget(ParityBox, 4, 1);
     layout->addWidget(OpenButton, 5, 1);
-    layout->addWidget(SendButton, 5, 2, Qt::AlignRight);
-    layout->addWidget(RecvArea, 0, 2, 3, 1);
-    layout->addWidget(SendArea, 3, 2, 2, 1);
-    layout->addWidget(ClearButton, 0, 3);
+    layout->addLayout(hlayout, 5, 2);
+    //    layout->addWidget(SendButton, 5, 2, Qt::AlignRight);
+    layout->addLayout(vlayout, 0, 2, 5, 1);
+    layout->addWidget(ClearButton, 0, 3, Qt::AlignLeft);
+    layout->setColumnStretch(0, 1);
+    layout->setColumnStretch(1, 1);
+    layout->setColumnStretch(2, 4);
+    layout->setColumnStretch(3, 1);
+
     setLayout(layout);
 
     //计时器 初始化
     CheckTimer = new QTimer(this);
-    connect(CheckTimer, QTimer::timeout, this, CheckSerials);
     CheckTimer->start(1000);
+    SendTimer = new QTimer(this);
+    connect(CheckTimer, QTimer::timeout, this, CheckSerials);
+    connect(SendTimer, QTimer::timeout, SendButton, QPushButton::click);
 
     //初始化串口列表
     CheckSerials();
@@ -146,7 +174,6 @@ void MainWidget::serialOpened()
 
 void MainWidget::serialNotOpened()
 {
-    qDebug()<<"打开失败";
     emit sendStatus(tr("串口打开失败"));
 }
 
@@ -165,7 +192,6 @@ void MainWidget::getRecv(QByteArray recv)
     RecvArea->moveCursor(QTextCursor::End);
     RecvArea->textCursor().insertText(recv);
     RecvArea->selectionChanged();
-//    RecvArea->moveCursor(QTextCursor::End);
 }
 
 void MainWidget::OpenSerial()
@@ -189,9 +215,27 @@ void MainWidget::ClearRecv()
     RecvArea->clear();
 }
 
+void MainWidget::detNewLine(int state)
+{
+    if(state==2)
+        isSendNewLine = true;
+    else if(state == 0)
+        isSendNewLine = false;
+}
+
+void MainWidget::ControlSendTimer(int state)
+{
+    if(state == 0)
+        SendTimer->stop();
+    else if(state == 2)
+        SendTimer->start(TimerSpin->value());
+}
+
 void MainWidget::SendContent()
 {
     QString content = SendArea->toPlainText();
+    if(isSendNewLine)
+        content += "\r\n";
     emit sendData(content);
 }
 

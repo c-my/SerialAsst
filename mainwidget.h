@@ -4,12 +4,16 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QGridLayout>
+#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QTextEdit>
 #include <QPlainTextEdit>
 #include <QPushButton>
 #include <QTimer>
 #include <QSerialPortInfo>
 #include <QLabel>
+#include <QCheckBox>
+#include <QSpinBox>
 #include <QThread>
 #include "serialcontroller.h"
 
@@ -45,17 +49,25 @@ public slots:
     void OpenSerial();
     void CloseSerial();
     void ClearRecv();
+    void detNewLine(int state);
+    void ControlSendTimer(int state);
 
 private:
     QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
     QStringList COMList, BaudrateList, StopbitsList, DatabitsList, ParityList;
     QLabel *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel;
     QGridLayout *layout;
+    QVBoxLayout *vlayout;
+    QHBoxLayout *hlayout;
     QTextEdit *RecvArea, *SendArea;
     QPushButton *OpenButton, *SendButton, *ClearButton;
-    QTimer *CheckTimer;
+    QCheckBox *NewLineBox, *TimerBox;
+    QSpinBox *TimerSpin;
+    QTimer *CheckTimer, *SendTimer;
     SerialController *serialController;
     QThread SerialThr;
+
+    bool isSendNewLine = false;
 
 };
 
