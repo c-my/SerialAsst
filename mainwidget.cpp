@@ -35,7 +35,8 @@ MainWidget::MainWidget(QWidget *parent)
     pal.setColor(QPalette::Text, Qt::green);
     RecvArea->setPalette(pal);
     SendArea = new QTextEdit();
-
+    RecvArea->setFont(QFont(tr("Microsoft YaHei UI"), 10));
+    SendArea->setFont(QFont(tr("Microsoft YaHei UI"), 13));
     SendArea->installEventFilter(this);
 
     //按钮
@@ -158,7 +159,10 @@ void MainWidget::serialClosed()
 
 void MainWidget::getRecv(QByteArray recv)
 {
+    RecvArea->moveCursor(QTextCursor::End);
+    RecvArea->textCursor().insertText(recv);
     RecvArea->setText(RecvArea->toPlainText()+QString(recv));
+//    RecvArea->moveCursor(QTextCursor::End);
 }
 
 void MainWidget::OpenSerial()
