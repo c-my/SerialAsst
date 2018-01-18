@@ -161,7 +161,7 @@ void MainWidget::getRecv(QByteArray recv)
 {
     RecvArea->moveCursor(QTextCursor::End);
     RecvArea->textCursor().insertText(recv);
-    RecvArea->setText(RecvArea->toPlainText()+QString(recv));
+    RecvArea->selectionChanged();
 //    RecvArea->moveCursor(QTextCursor::End);
 }
 
