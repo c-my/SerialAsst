@@ -36,3 +36,9 @@ HEADERS += \
 
 RESOURCES += \
     resource.qrc
+
+DISTFILES += \
+    serialasst.rc
+
+RC_FILE += \
+    serialasst.rc
