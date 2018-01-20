@@ -56,17 +56,18 @@ public slots:
     void ControlSendTimer(int state);
     void changeSendTimer();
     void detHex(int state);
+    void detRecvHex(int state);
 
 private:
     QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
     QStringList COMList, BaudrateList, StopbitsList, DatabitsList, ParityList;
     QLabel *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel;
     QGridLayout *layout;
-    QVBoxLayout *vlayout;
+    QVBoxLayout *cvlayout, *rvlayout;
     QHBoxLayout *hlayout;
     QTextEdit *RecvArea, *SendArea;
     QPushButton *OpenButton, *SendButton, *ClearButton;
-    QCheckBox *NewLineBox, *TimerBox, *HexSend;
+    QCheckBox *NewLineBox, *TimerBox, *HexSend, *HexRecv;
     QSpinBox *TimerSpin;
     QTimer *CheckTimer, *SendTimer;
     SerialController *serialController;
@@ -74,6 +75,7 @@ private:
 
     bool isSendNewLine = false;
     bool isSendHex = false;
+    bool isRecvHex = false;
 
     QString HexStringToString(QString hexstr);
 

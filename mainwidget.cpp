@@ -54,10 +54,13 @@ MainWidget::MainWidget(QWidget *parent)
     NewLineBox = new QCheckBox(tr("发送新行"));
     TimerBox = new QCheckBox(tr("定时发送"));
     HexSend = new QCheckBox(tr("发送16进制"));
+    HexRecv = new QCheckBox(tr("接收16进制"));
+    HexSend->setToolTip(tr("以空格作为间隔符， \n非法字符及其后面的字符将被忽略"));
 
     connect(NewLineBox, QCheckBox::stateChanged, this, detNewLine);
     connect(TimerBox, QCheckBox::stateChanged, this, ControlSendTimer);
     connect(HexSend, QCheckBox::stateChanged, this, detHex);
+    connect(HexRecv, QCheckBox::stateChanged, this, detRecvHex);
 
     //spinbox
     TimerSpin = new QSpinBox();
@@ -69,15 +72,18 @@ MainWidget::MainWidget(QWidget *parent)
             this, changeSendTimer);
 
     //初始化布局
-    vlayout = new QVBoxLayout();
-    vlayout->addWidget(RecvArea, 7);
-    vlayout->addWidget(SendArea, 2);
+    cvlayout = new QVBoxLayout();
+    cvlayout->addWidget(RecvArea, 7);
+    cvlayout->addWidget(SendArea, 2);
     hlayout = new QHBoxLayout();
     hlayout->addWidget(HexSend);
     hlayout->addWidget(NewLineBox, Qt::AlignRight);
     hlayout->addWidget(TimerBox, Qt::AlignRight);
     hlayout->addWidget(TimerSpin);
     hlayout->addWidget(SendButton);
+    rvlayout = new QVBoxLayout();
+    rvlayout->addWidget(ClearButton);
+    rvlayout->addWidget(HexRecv);
     layout = new QGridLayout(this);
     layout->addWidget(COMBox, 0, 0, 1, 2);
     layout->addWidget(BaudrateLabel, 1, 0);
@@ -91,8 +97,9 @@ MainWidget::MainWidget(QWidget *parent)
     layout->addWidget(OpenButton, 5, 1);
     layout->addLayout(hlayout, 5, 2);
     //    layout->addWidget(SendButton, 5, 2, Qt::AlignRight);
-    layout->addLayout(vlayout, 0, 2, 5, 1);
-    layout->addWidget(ClearButton, 0, 3, Qt::AlignLeft);
+    layout->addLayout(cvlayout, 0, 2, 5, 1);
+//    layout->addWidget(ClearButton, 0, 3, Qt::AlignLeft);
+    layout->addLayout(rvlayout, 0, 3);
     layout->setColumnStretch(0, 1);
     layout->setColumnStretch(1, 1);
     layout->setColumnStretch(2, 4);
@@ -197,8 +204,12 @@ void MainWidget::serialClosed()
 void MainWidget::getRecv(QByteArray recv)
 {
     RecvArea->moveCursor(QTextCursor::End);
-    RecvArea->textCursor().insertText(QString::fromLocal8Bit(recv));
-    RecvArea->selectionChanged();
+    if(!isRecvHex)
+        RecvArea->textCursor().insertText(QString::fromLocal8Bit(recv));
+    else
+    {
+        RecvArea->textCursor().insertText(QString(recv.toHex())+tr(" "));
+    }
 }
 
 void MainWidget::OpenSerial()
@@ -256,6 +267,24 @@ void MainWidget::detHex(int state)
         QString tmpstr = SendArea->toPlainText();
         SendArea->clear();
         SendArea->setText(HexStringToString(tmpstr));
+    }
+}
+
+void MainWidget::detRecvHex(int state)
+{
+    if(state == 2)
+    {
+        isRecvHex = true;
+        RecvArea->setText(RecvArea->toPlainText().toLocal8Bit().toHex(' '));
+        RecvArea->moveCursor(QTextCursor::End);
+        RecvArea->insertPlainText(tr(" "));
+    }
+    else if(state == 0)
+    {
+        isRecvHex = false;
+        QString tmpstr = RecvArea->toPlainText();
+        RecvArea->clear();
+        RecvArea->setText(HexStringToString(tmpstr));
     }
 }
 
