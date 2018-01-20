@@ -215,7 +215,6 @@ void MainWidget::getRecv(QByteArray recv)
 void MainWidget::OpenSerial()
 {
     QString portName = COMBox->currentText().split(' ')[0];
-    qDebug()<<portName;
     emit requestOpen(portName);
     emit setBaudRate(BaudrateBox->currentText());
     emit setStopBits(StopbitsBox->currentText());

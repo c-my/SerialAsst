@@ -19,7 +19,6 @@
 #include <QByteArray>
 #include "serialcontroller.h"
 
-#include <QDebug>
 
 
 class MainWidget : public QWidget
@@ -42,7 +41,7 @@ signals:
     void setParity(QString parity);
     void sendData(QString content);
     void sendStatus(QString status);    //更新statusbar
-    void sendDateTime(QString datetime);
+    void sendDateTime(QString datetime);    //更新stastatusbar中的时间
 
 public slots:
     void serialOpened();    //串口打开成功
@@ -52,11 +51,11 @@ public slots:
     void OpenSerial();
     void CloseSerial();
     void ClearRecv();
-    void detNewLine(int state);
+    void detNewLine(int state); //处理发送新行
     void ControlSendTimer(int state);
     void changeSendTimer();
-    void detHex(int state);
-    void detRecvHex(int state);
+    void detHex(int state); //处理16进制发送
+    void detRecvHex(int state); //处理16进制接收
 
 private:
     QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
@@ -77,7 +76,7 @@ private:
     bool isSendHex = false;
     bool isRecvHex = false;
 
-    QString HexStringToString(QString hexstr);
+    QString HexStringToString(QString hexstr);  //解码16进制字符串
 
 };
 

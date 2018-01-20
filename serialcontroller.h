@@ -3,7 +3,6 @@
 
 #include <QObject>
 #include <QSerialPort>
-#include <QDebug>
 
 class SerialController : public QObject
 {

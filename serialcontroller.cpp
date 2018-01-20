@@ -34,7 +34,6 @@ void SerialController::closeSerial()
 void SerialController::getBaudrate(QString baudrate)
 {
     serial->setBaudRate(baudrate.toInt());
-    qDebug()<<"The baudrate now is "<<baudrate.toInt();
 
 }
 
@@ -46,13 +45,11 @@ void SerialController::getStopbits(QString stopbits)
         serial->setStopBits(QSerialPort::OneAndHalfStop);
     else if(stopbits == "2")
         serial->setStopBits(QSerialPort::TwoStop);
-    qDebug()<<"The stopbits now is "<<stopbits;
 }
 
 void SerialController::getDatabits(QString databits)
 {
     serial->setDataBits(QSerialPort::DataBits(databits.toInt()));
-    qDebug()<<"The databits now is "<<databits;
 }
 
 void SerialController::getParity(QString parity)
@@ -65,7 +62,6 @@ void SerialController::getParity(QString parity)
 
     else if(parity == tr("偶校验"))
         serial->setParity(QSerialPort::EvenParity);
-    qDebug()<<"The parity now is "<<parity;
 }
 
 void SerialController::writeData(QString content)
