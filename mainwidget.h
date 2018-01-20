@@ -16,6 +16,7 @@
 #include <QSpinBox>
 #include <QThread>
 #include <QDateTime>
+#include <QByteArray>
 #include "serialcontroller.h"
 
 #include <QDebug>
@@ -54,6 +55,7 @@ public slots:
     void detNewLine(int state);
     void ControlSendTimer(int state);
     void changeSendTimer();
+    void detHex(int state);
 
 private:
     QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
@@ -64,13 +66,16 @@ private:
     QHBoxLayout *hlayout;
     QTextEdit *RecvArea, *SendArea;
     QPushButton *OpenButton, *SendButton, *ClearButton;
-    QCheckBox *NewLineBox, *TimerBox;
+    QCheckBox *NewLineBox, *TimerBox, *HexSend;
     QSpinBox *TimerSpin;
     QTimer *CheckTimer, *SendTimer;
     SerialController *serialController;
     QThread SerialThr;
 
     bool isSendNewLine = false;
+    bool isSendHex = false;
+
+    QString HexStringToString(QString hexstr);
 
 };
 

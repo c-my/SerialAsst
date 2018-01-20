@@ -72,7 +72,7 @@ void SerialController::writeData(QString content)
 {
     if(serial->isWritable())
     {
-        qint64 result = serial->write(content.toLatin1().data());
+        qint64 result = serial->write(content.toLocal8Bit().data());
         if(result == -1)
             emit writeFailed();
         else

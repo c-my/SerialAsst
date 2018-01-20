@@ -53,9 +53,11 @@ MainWidget::MainWidget(QWidget *parent)
     //复选框
     NewLineBox = new QCheckBox(tr("发送新行"));
     TimerBox = new QCheckBox(tr("定时发送"));
+    HexSend = new QCheckBox(tr("发送16进制"));
 
     connect(NewLineBox, QCheckBox::stateChanged, this, detNewLine);
     connect(TimerBox, QCheckBox::stateChanged, this, ControlSendTimer);
+    connect(HexSend, QCheckBox::stateChanged, this, detHex);
 
     //spinbox
     TimerSpin = new QSpinBox();
@@ -71,6 +73,7 @@ MainWidget::MainWidget(QWidget *parent)
     vlayout->addWidget(RecvArea, 7);
     vlayout->addWidget(SendArea, 2);
     hlayout = new QHBoxLayout();
+    hlayout->addWidget(HexSend);
     hlayout->addWidget(NewLineBox, Qt::AlignRight);
     hlayout->addWidget(TimerBox, Qt::AlignRight);
     hlayout->addWidget(TimerSpin);
@@ -194,7 +197,7 @@ void MainWidget::serialClosed()
 void MainWidget::getRecv(QByteArray recv)
 {
     RecvArea->moveCursor(QTextCursor::End);
-    RecvArea->textCursor().insertText(recv);
+    RecvArea->textCursor().insertText(QString::fromLocal8Bit(recv));
     RecvArea->selectionChanged();
 }
 
@@ -240,9 +243,39 @@ void MainWidget::changeSendTimer()
     ControlSendTimer(TimerBox->checkState());
 }
 
+void MainWidget::detHex(int state)
+{
+    if(state == 2)
+    {
+        isSendHex = true;
+        SendArea->setText(SendArea->toPlainText().toLocal8Bit().toHex(' '));
+    }
+    else if(state == 0)
+    {
+        isSendHex = false;
+        QString tmpstr = SendArea->toPlainText();
+        SendArea->clear();
+        SendArea->setText(HexStringToString(tmpstr));
+    }
+}
+
+QString MainWidget::HexStringToString(QString hexstr)
+{
+    QStringList list = hexstr.split(' ');
+    QByteArray bit;
+    foreach (QString str, list)
+    {
+        if(!str.isEmpty())
+            bit.append(str.toInt(nullptr, 16));
+    }
+    return QString::fromLocal8Bit(bit);
+}
+
 void MainWidget::SendContent()
 {
     QString content = SendArea->toPlainText();
+    if(isSendHex)
+        content = HexStringToString(content);
     if(isSendNewLine)
         content += "\r\n";
     emit sendData(content);
