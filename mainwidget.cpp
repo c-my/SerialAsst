@@ -1,7 +1,7 @@
 #include "mainwidget.h"
 
 MainWidget::MainWidget(QWidget *parent)
-    : QWidget(parent)
+    : QWidget(parent), settings("TurnMeOn", "SerialAsst")
 {
     //初始化各参数列表
     BaudrateList<<"256000"<<"230400"<<"128000"<<"115200"<<"76800"<<"57600"
@@ -14,12 +14,16 @@ MainWidget::MainWidget(QWidget *parent)
     COMBox = new QComboBox();
     BaudrateBox = new QComboBox();
     BaudrateBox->addItems(BaudrateList);
+    BaudrateBox->setCurrentIndex(settings.value("Baud rate", 0).toInt());
     StopbitsBox = new QComboBox();
     StopbitsBox->addItems(StopbitsList);
+    StopbitsBox->setCurrentIndex(settings.value("Stop bits", 0).toInt());
     DatabitsBox = new QComboBox();
     DatabitsBox->addItems(DatabitsList);
+    DatabitsBox->setCurrentIndex(settings.value("Data bits", 0).toInt());
     ParityBox = new QComboBox();
     ParityBox->addItems(ParityList);
+    ParityBox->setCurrentIndex(settings.value("Parity", 0).toInt());
 
     //初始化label
     BaudrateLabel = new QLabel(tr("波特率"));
@@ -137,6 +141,7 @@ MainWidget::MainWidget(QWidget *parent)
     connect(ParityBox, QComboBox::currentTextChanged, serialController, SerialController::getParity);
     connect(this, sendData, serialController, SerialController::writeData);
     connect(serialController, SerialController::recvData, this, getRecv);
+
 }
 
 void MainWidget::CheckSerials()
@@ -174,6 +179,10 @@ void MainWidget::CheckSerials()
 MainWidget::~MainWidget()
 {
     SerialThr.terminate();
+    settings.setValue("Baud rate", BaudrateBox->currentIndex());
+    settings.setValue("Stop bits", StopbitsBox->currentIndex());
+    settings.setValue("Data bits", DatabitsBox->currentIndex());
+    settings.setValue("Parity", ParityBox->currentIndex());
 }
 
 void MainWidget::serialOpened()

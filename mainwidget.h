@@ -17,6 +17,7 @@
 #include <QThread>
 #include <QDateTime>
 #include <QByteArray>
+#include <QSettings>
 #include "serialcontroller.h"
 
 
@@ -71,6 +72,7 @@ private:
     QTimer *CheckTimer, *SendTimer;
     SerialController *serialController;
     QThread SerialThr;
+    QSettings settings;
 
     bool isSendNewLine = false;
     bool isSendHex = false;
