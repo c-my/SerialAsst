@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
-    widget(new MainWidget(this))
+                                          widget(new MainWidget(this))
 {
     statusbar = new QStatusBar(this);
     setStatusBar(statusbar);

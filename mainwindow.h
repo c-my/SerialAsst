@@ -8,20 +8,20 @@
 
 class MainWindow : public QMainWindow
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    explicit MainWindow(QWidget *parent = nullptr);
+  explicit MainWindow(QWidget *parent = nullptr);
 
 signals:
 
 public slots:
-    void setNewMsg(QString msg);
-    void setDateTime(QString datetime);
+  void setNewMsg(QString msg);
+  void setDateTime(QString datetime);
 
 private:
-    MainWidget *widget;
-    QStatusBar *statusbar;
-    QLabel *timeLabel;
+  MainWidget *widget;
+  QStatusBar *statusbar;
+  QLabel *timeLabel;
 };
 
 #endif // MAINWINDOW_H
