@@ -9,8 +9,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     setStatusBar(statusbar);
 
     aboutQtAct = new QAction(tr("&关于Qt"), this);
+    aboutAct = new QAction(tr("&关于SerialAsst"), this);
     helpMenu = menuBar->addMenu(tr("&帮助"));
     helpMenu->addAction(aboutQtAct);
+    helpMenu->addAction(aboutAct);
     setCentralWidget(widget);
     statusbar->showMessage(tr("准备就绪"));
     connect(widget, MainWidget::sendStatus, this, setNewMsg);
@@ -19,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     timeLabel->setText(QDateTime::currentDateTime().toString());
 
     connect(aboutQtAct, &QAction::triggered, this, &showAboutQt);
+    connect(aboutAct, &QAction::triggered, this, showAbout);
     connect(widget, MainWidget::sendDateTime, this, setDateTime);
     resize(900, 600);
 }
@@ -37,4 +40,9 @@ void MainWindow::showAboutQt()
 {
       QMessageBox *aboutWindow = new QMessageBox(this);
       aboutWindow->aboutQt(this);
+}
+
+void MainWindow::showAbout()
+{
+
 }

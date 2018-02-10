@@ -43,7 +43,7 @@ MainWidget::MainWidget(QWidget *parent)
     ParityBox->setCurrentIndex(settings.value("Parity", 0).toInt());
 
     //初始化label
-    COMLabel = new QLabel(tr("串口"));
+    COMLabel = new QLabel(tr("串口号"));
     BaudrateLabel = new QLabel(tr("波特率"));
     StopbitsLabel = new QLabel(tr("停止位"));
     DatabitsLabel = new QLabel(tr("数据位"));
@@ -66,11 +66,13 @@ MainWidget::MainWidget(QWidget *parent)
     SendButton = new QPushButton(tr("发送"));
     SendButton->setDisabled(true);
     SendButton->setToolTip(tr("Ctrl+Enter"));
-    ClearButton = new QPushButton(tr("清除接收"));
+    ClearRecvButton = new QPushButton(tr("清除接收"));
+    ClearSendButton = new QPushButton(tr("清除发送"));
 
     connect(OpenButton, QPushButton::clicked, this, OpenSerial);
     connect(SendButton, QPushButton::clicked, this, SendContent);
-    connect(ClearButton, QPushButton::clicked, this, ClearRecv);
+    connect(ClearRecvButton, QPushButton::clicked, this, ClearRecv);
+    connect(ClearSendButton, QPushButton::clicked, this, ClearSend);
 
     //复选框
     NewLineBox = new QCheckBox(tr("发送新行"));
@@ -98,58 +100,56 @@ MainWidget::MainWidget(QWidget *parent)
             this, changeSendTimer);
 
     //初始化布局
-    flayout = new QFormLayout();
-    flayout->addRow(BaudrateLabel, BaudrateBox);
-    flayout->addRow(StopbitsLabel, StopbitsBox);
-    flayout->addRow(DatabitsLabel, DatabitsBox);
-    flayout->addRow(ParityLabel, ParityBox);
-    flayout->addRow(COMLabel, COMBox);
-    flayout->addRow(OpenButton);
-    flayout->setAlignment(OpenButton, Qt::AlignVCenter);
-//    flayout->setSpacing(50);
-    flayout->setMargin(30);
-    flayout->setHorizontalSpacing(20);
-    flayout->setVerticalSpacing(60);
+    leftLlayout = new QFormLayout();
+    leftLlayout->addRow(BaudrateLabel, BaudrateBox);
+    leftLlayout->addRow(StopbitsLabel, StopbitsBox);
+    leftLlayout->addRow(DatabitsLabel, DatabitsBox);
+    leftLlayout->addRow(ParityLabel, ParityBox);
+    leftLlayout->addRow(COMLabel, COMBox);
+    leftLlayout->addRow(OpenButton);
+    leftLlayout->setAlignment(OpenButton, Qt::AlignVCenter);
+    leftLlayout->setMargin(30);
+    leftLlayout->setHorizontalSpacing(20);
+    leftLlayout->setVerticalSpacing(60);
 
     paramGroup = new QGroupBox();
-    paramGroup->setLayout(flayout);
+    paramGroup->setLayout(leftLlayout);
     paramGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     cvlayout = new QVBoxLayout();
     cvlayout->addWidget(RecvArea, 7);
     cvlayout->addWidget(SendArea, 2);
-    //    RecvArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    //    SendArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
-    hlayout = new QHBoxLayout();
-    hlayout->addWidget(HexSend);
-    hlayout->addWidget(NewLineBox, 0, Qt::AlignLeft);
-    hlayout->addWidget(TimerBox, 0, Qt::AlignRight);
-    hlayout->addWidget(TimerSpin, 0, Qt::AlignLeft);
-    hlayout->addWidget(SendButton, 0, Qt::AlignRight);
+    bottomLayout = new QHBoxLayout();
+    bottomLayout->addWidget(ClearSendButton, 0, Qt::AlignLeft);
+    bottomLayout->addWidget(HexSend);
+    bottomLayout->addWidget(NewLineBox, 0, Qt::AlignLeft);
+    bottomLayout->addWidget(TimerBox, 0, Qt::AlignRight);
+    bottomLayout->addWidget(TimerSpin, 1, Qt::AlignLeft);
+    bottomLayout->addWidget(SendButton, 0, Qt::AlignRight);
 
-    rvlayout = new QVBoxLayout();
-    rvlayout->addWidget(ClearButton, 0, Qt::AlignCenter);
-    rvlayout->addWidget(HexRecv);
-    rvlayout->addWidget(RTSBox);
-    rvlayout->addWidget(DTRBox);
+    rightLayout = new QVBoxLayout();
+    rightLayout->addWidget(ClearRecvButton, 0, Qt::AlignCenter);
+    rightLayout->addWidget(HexRecv);
+    rightLayout->addWidget(RTSBox);
+    rightLayout->addWidget(DTRBox);
 
-    layout = new QGridLayout(this);
+    centralLayout = new QGridLayout(this);
 
 //    layout->addLayout(flayout, 0, 0, 2, 1);
-    layout->addWidget(paramGroup, 0, 0, 2, 1);
-    layout->addLayout(hlayout, 1, 1);
-    layout->addLayout(cvlayout, 0, 1, 1, 1);
-    layout->addLayout(rvlayout, 0, 2, Qt::AlignTop);
+    centralLayout->addWidget(paramGroup, 0, 0, 2, 1);
+    centralLayout->addLayout(bottomLayout, 1, 1);
+    centralLayout->addLayout(cvlayout, 0, 1, 1, 1);
+    centralLayout->addLayout(rightLayout, 0, 2, Qt::AlignTop);
 
-    layout->setColumnMinimumWidth(0, 150);
-    layout->setColumnMinimumWidth(2, 100);
+    centralLayout->setColumnMinimumWidth(0, 150);
+    centralLayout->setColumnMinimumWidth(2, 100);
 
-    layout->setColumnStretch(0, 0);
-    layout->setColumnStretch(1, 2);
-    layout->setColumnStretch(2, 0);
+    centralLayout->setColumnStretch(0, 0);
+    centralLayout->setColumnStretch(1, 2);
+    centralLayout->setColumnStretch(2, 0);
 
-    setLayout(layout);
+    setLayout(centralLayout);
 
     //计时器 初始化
     CheckTimer = new QTimer(this);
@@ -246,6 +246,7 @@ void MainWidget::serialOpened()
 void MainWidget::serialNotOpened()
 {
     emit sendStatus(tr("串口打开失败"));
+    QApplication::beep();
 }
 
 void MainWidget::serialClosed()
@@ -284,6 +285,11 @@ void MainWidget::CloseSerial()
 void MainWidget::ClearRecv()
 {
     RecvArea->clear();
+}
+
+void MainWidget::ClearSend()
+{
+    SendArea->clear();
 }
 
 void MainWidget::detNewLine(int state)

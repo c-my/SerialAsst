@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QComboBox>
 #include <QGridLayout>
+#include <QApplication>
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QTextEdit>
@@ -54,6 +55,7 @@ public slots:
   void OpenSerial();
   void CloseSerial();
   void ClearRecv();
+  void ClearSend();
   void detNewLine(int state); //处理发送新行
   void ControlSendTimer(int state);
   void changeSendTimer();
@@ -67,13 +69,13 @@ private:
   QStringList BaudrateList, StopbitsList, DatabitsList, ParityList;
   QStringList COMList, PortNameList, DescList;
   QLabel *COMLabel, *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel;
-  QGridLayout *layout;
-  QVBoxLayout *cvlayout, *rvlayout;
-  QHBoxLayout *hlayout;
-  QFormLayout *flayout;
+  QGridLayout *centralLayout;
+  QVBoxLayout *cvlayout, *rightLayout;
+  QHBoxLayout *bottomLayout;
+  QFormLayout *leftLlayout;
   QGroupBox *paramGroup;
   QTextEdit *RecvArea, *SendArea;
-  QPushButton *OpenButton, *SendButton, *ClearButton;
+  QPushButton *OpenButton, *SendButton, *ClearRecvButton, *ClearSendButton;
   QCheckBox *NewLineBox, *TimerBox, *HexSend, *HexRecv, *RTSBox, *DTRBox;
   QSpinBox *TimerSpin;
   QTimer *CheckTimer, *SendTimer;

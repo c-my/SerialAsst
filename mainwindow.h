@@ -17,15 +17,16 @@ public:
 signals:
 
 public slots:
-  void setNewMsg(QString msg);
-  void setDateTime(QString datetime);
+  void setNewMsg(QString msg);  //设置状态栏信息
+  void setDateTime(QString datetime);   //设置状态栏时间
   void showAboutQt();
+  void showAbout();
 
 private:
   MainWidget *widget;
   QMenuBar *menuBar;
   QMenu *helpMenu;
-  QAction *aboutQtAct;
+  QAction *aboutQtAct, *aboutAct;
   QStatusBar *statusbar;
   QLabel *timeLabel;
 

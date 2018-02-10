@@ -27,8 +27,8 @@ public slots:
   void getParity(QString parity);     //改变校验位
   void writeData(QString content);    //发送数据
   void handleRecv();                  //接受数据
-  void contrloRTS(bool set);
-  void controlDTR(bool set);
+  void contrloRTS(bool set);          //设置RTS位
+  void controlDTR(bool set);          //设置DTR位
 
 private:
   QSerialPort *serial;
