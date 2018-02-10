@@ -43,6 +43,8 @@ signals:
   void sendData(QString content);
   void sendStatus(QString status);     //更新statusbar
   void sendDateTime(QString datetime); //更新stastatusbar中的时间
+  void changeRTS(bool set);
+  void changeDTR(bool set);
 
 public slots:
   void serialOpened();           //串口打开成功
@@ -57,6 +59,8 @@ public slots:
   void changeSendTimer();
   void detHex(int state);     //处理16进制发送
   void detRecvHex(int state); //处理16进制接收
+  void RTSControl(int state);
+  void DTRControl(int state);
 
 private:
   QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
@@ -70,7 +74,7 @@ private:
   QGroupBox *paramGroup;
   QTextEdit *RecvArea, *SendArea;
   QPushButton *OpenButton, *SendButton, *ClearButton;
-  QCheckBox *NewLineBox, *TimerBox, *HexSend, *HexRecv;
+  QCheckBox *NewLineBox, *TimerBox, *HexSend, *HexRecv, *RTSBox, *DTRBox;
   QSpinBox *TimerSpin;
   QTimer *CheckTimer, *SendTimer;
   SerialController *serialController;
@@ -80,8 +84,10 @@ private:
   bool isSendNewLine = false;
   bool isSendHex = false;
   bool isRecvHex = false;
+  bool isOpened = false;
 
   QString HexStringToString(QString hexstr); //解码16进制字符串
+  void ACtionAttachToSerial(bool set);
 };
 
 #endif // MAINWIDGET_H

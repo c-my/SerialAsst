@@ -13,6 +13,7 @@ void SerialController::openSerial(QString name)
     {
         //串口打开成功
         serial->setDataTerminalReady(false);
+        serial->setDataTerminalReady(false);
         emit openSuccess();
     }
     else
@@ -79,4 +80,14 @@ void SerialController::handleRecv()
 {
     QByteArray data = serial->readAll();
     emit recvData(data);
+}
+
+void SerialController::contrloRTS(bool set)
+{
+    serial->setRequestToSend(set);
+}
+
+void SerialController::controlDTR(bool set)
+{
+    serial->setDataTerminalReady(set);
 }

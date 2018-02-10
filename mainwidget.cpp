@@ -78,11 +78,15 @@ MainWidget::MainWidget(QWidget *parent)
     HexSend = new QCheckBox(tr("发送16进制"));
     HexRecv = new QCheckBox(tr("接收16进制"));
     HexSend->setToolTip(tr("以空格作为间隔符， \n非法字符及其后面的字符将被忽略"));
+    RTSBox = new QCheckBox(tr("RTS"));
+    DTRBox = new QCheckBox(tr("DTR"));
 
     connect(NewLineBox, QCheckBox::stateChanged, this, detNewLine);
     connect(TimerBox, QCheckBox::stateChanged, this, ControlSendTimer);
     connect(HexSend, QCheckBox::stateChanged, this, detHex);
     connect(HexRecv, QCheckBox::stateChanged, this, detRecvHex);
+    connect(RTSBox, QCheckBox::stateChanged, this, RTSControl);
+    connect(DTRBox, QCheckBox::stateChanged, this, DTRControl);
 
     //spinbox
     TimerSpin = new QSpinBox();
@@ -102,13 +106,14 @@ MainWidget::MainWidget(QWidget *parent)
     flayout->addRow(COMLabel, COMBox);
     flayout->addRow(OpenButton);
     flayout->setAlignment(OpenButton, Qt::AlignVCenter);
-    //    flayout->setSpacing(50);
-    //    flayout->setMargin(10);
-    flayout->setVerticalSpacing(50);
+//    flayout->setSpacing(50);
+    flayout->setMargin(30);
+    flayout->setHorizontalSpacing(20);
+    flayout->setVerticalSpacing(60);
 
-    //    paramGroup = new QGroupBox();
-    //    paramGroup->setLayout(flayout);
-    //    paramGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    paramGroup = new QGroupBox();
+    paramGroup->setLayout(flayout);
+    paramGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     cvlayout = new QVBoxLayout();
     cvlayout->addWidget(RecvArea, 7);
@@ -126,10 +131,13 @@ MainWidget::MainWidget(QWidget *parent)
     rvlayout = new QVBoxLayout();
     rvlayout->addWidget(ClearButton, 0, Qt::AlignCenter);
     rvlayout->addWidget(HexRecv);
+    rvlayout->addWidget(RTSBox);
+    rvlayout->addWidget(DTRBox);
 
     layout = new QGridLayout(this);
 
-    layout->addLayout(flayout, 0, 0, 2, 1);
+//    layout->addLayout(flayout, 0, 0, 2, 1);
+    layout->addWidget(paramGroup, 0, 0, 2, 1);
     layout->addLayout(hlayout, 1, 1);
     layout->addLayout(cvlayout, 0, 1, 1, 1);
     layout->addLayout(rvlayout, 0, 2, Qt::AlignTop);
@@ -171,6 +179,8 @@ MainWidget::MainWidget(QWidget *parent)
     connect(StopbitsBox, QComboBox::currentTextChanged, serialController, SerialController::getStopbits);
     connect(DatabitsBox, QComboBox::currentTextChanged, serialController, SerialController::getDatabits);
     connect(ParityBox, QComboBox::currentTextChanged, serialController, SerialController::getParity);
+    connect(this, changeRTS, serialController, SerialController::contrloRTS);
+    connect(this, changeDTR, serialController, SerialController::controlDTR);
     connect(this, sendData, serialController, SerialController::writeData);
     connect(serialController, SerialController::recvData, this, getRecv);
 }
@@ -210,6 +220,7 @@ void MainWidget::CheckSerials()
         COMBox->setDisabled(true);
         OpenButton->setDisabled(true);
         emit CloseSerial();
+        isOpened = false;
     }
 }
 
@@ -224,12 +235,12 @@ MainWidget::~MainWidget()
 
 void MainWidget::serialOpened()
 {
-    OpenButton->setText(tr("关闭串口"));
-    emit sendStatus(QString(/*tr("串口已打开") + */ COMBox->currentText()));
-    COMBox->setDisabled(true);
-    SendButton->setDisabled(false);
-    disconnect(OpenButton, QPushButton::clicked, this, OpenSerial);
-    connect(OpenButton, QPushButton::clicked, this, CloseSerial);
+    isOpened = true;
+    int portIndex = COMBox->currentIndex();
+    emit sendStatus(QString(PortNameList[portIndex] + tr(" ") + DescList[portIndex]));
+    emit RTSBox->stateChanged(RTSBox->checkState());
+    emit DTRBox->stateChanged(DTRBox->checkState());
+    ACtionAttachToSerial(true);
 }
 
 void MainWidget::serialNotOpened()
@@ -239,11 +250,8 @@ void MainWidget::serialNotOpened()
 
 void MainWidget::serialClosed()
 {
-    OpenButton->setText(tr("打开串口"));
-    COMBox->setDisabled(false);
-    SendButton->setDisabled(true);
-    disconnect(OpenButton, QPushButton::clicked, this, CloseSerial);
-    connect(OpenButton, QPushButton::clicked, this, OpenSerial);
+    isOpened = false;
+    ACtionAttachToSerial(false);
     emit sendStatus(tr("串口已关闭"));
 }
 
@@ -333,6 +341,28 @@ void MainWidget::detRecvHex(int state)
     }
 }
 
+void MainWidget::RTSControl(int state)
+{
+    if(isOpened)
+    {
+        if(state == 2)
+            emit changeRTS(true);
+        else if(state == 0)
+            emit changeRTS(false);
+    }
+}
+
+void MainWidget::DTRControl(int state)
+{
+    if(isOpened)
+    {
+        if(state == 2)
+            emit changeDTR(true);
+        else if(state == 0)
+            emit changeDTR(false);
+    }
+}
+
 QString MainWidget::HexStringToString(QString hexstr)
 {
     QStringList list = hexstr.split(' ');
@@ -343,6 +373,26 @@ QString MainWidget::HexStringToString(QString hexstr)
             bit.append(str.toInt(nullptr, 16));
     }
     return QString::fromLocal8Bit(bit);
+}
+
+void MainWidget::ACtionAttachToSerial(bool set)
+{
+    if(set)
+    {
+        OpenButton->setText(tr("关闭串口"));
+        COMBox->setDisabled(true);
+        SendButton->setDisabled(false);
+        disconnect(OpenButton, QPushButton::clicked, this, OpenSerial);
+        connect(OpenButton, QPushButton::clicked, this, CloseSerial);
+    }
+    else
+    {
+        OpenButton->setText(tr("打开串口"));
+        COMBox->setDisabled(false);
+        SendButton->setDisabled(true);
+        disconnect(OpenButton, QPushButton::clicked, this, CloseSerial);
+        connect(OpenButton, QPushButton::clicked, this, OpenSerial);
+    }
 }
 
 void MainWidget::SendContent()
