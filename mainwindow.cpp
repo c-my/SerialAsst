@@ -10,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
 
     aboutQtAct = new QAction(/*QIcon(":/pic/icon/qt-icon.png"), */tr("&关于Qt"), this);
     aboutAct = new QAction(/*QIcon(":/pic/icon/about.png"), */tr("&关于SerialAsst"), this);
-    helpMenu = menuBar->addMenu(tr("&帮助"));
+    helpMenu = menuBar->addMenu(tr("帮助(&H)"));
     helpMenu->addAction(aboutQtAct);
     helpMenu->addAction(aboutAct);
     setCentralWidget(widget);
@@ -38,11 +38,19 @@ void MainWindow::setDateTime(QString datetime)
 
 void MainWindow::showAboutQt()
 {
-      QMessageBox *aboutWindow = new QMessageBox(this);
-      aboutWindow->aboutQt(this);
+      QMessageBox *aboutQtWindow = new QMessageBox(this);
+      aboutQtWindow->aboutQt(this);
 }
 
 void MainWindow::showAbout()
 {
-
+    QMessageBox *aboutWindow = new QMessageBox(this);
+    aboutWindow->setStandardButtons(QMessageBox::Ok);
+    aboutWindow->setText(tr("<h1>SerialAsst</h1>"
+                             "<p>Based on Qt 5.10.0 (MinGW 5.3.0, 32bit)</p>"
+                             "Source Code: <a href=\"https://github.com/TurnMeOn/SerialAsst\">https://github.com/TurnMeOn/SerialAsst</a><br/>"
+                             "<address>"
+                            "Email: <a href=\"mailto:cmy1113@yeah.net?subject=SerialAsst Feedback\">TurnMeOn</a>"
+                            "</address>"));
+    aboutWindow->show();
 }
