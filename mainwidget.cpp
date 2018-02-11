@@ -83,6 +83,7 @@ MainWidget::MainWidget(QWidget *parent)
     RTSBox = new QCheckBox(tr("RTS"));
     DTRBox = new QCheckBox(tr("DTR"));
 
+    //绑定复选框信号
     connect(NewLineBox, QCheckBox::stateChanged, this, detNewLine);
     connect(TimerBox, QCheckBox::stateChanged, this, ControlSendTimer);
     connect(HexSend, QCheckBox::stateChanged, this, detHex);
@@ -90,12 +91,12 @@ MainWidget::MainWidget(QWidget *parent)
     connect(RTSBox, QCheckBox::stateChanged, this, RTSControl);
     connect(DTRBox, QCheckBox::stateChanged, this, DTRControl);
 
-    //spinbox
+    //定时发送spinbox
     TimerSpin = new QSpinBox();
     TimerSpin->setSuffix(tr(" ms"));
     TimerSpin->setMaximum(1000000);
     TimerSpin->setValue(1000);
-
+    //valueChanged有多个重载
     connect(TimerSpin, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
             this, changeSendTimer);
 
@@ -136,7 +137,6 @@ MainWidget::MainWidget(QWidget *parent)
 
     centralLayout = new QGridLayout(this);
 
-//    layout->addLayout(flayout, 0, 0, 2, 1);
     centralLayout->addWidget(paramGroup, 0, 0, 2, 1);
     centralLayout->addLayout(bottomLayout, 1, 1);
     centralLayout->addLayout(cvlayout, 0, 1, 1, 1);
@@ -166,11 +166,13 @@ MainWidget::MainWidget(QWidget *parent)
     serialController->moveToThread(&SerialThr);
     SerialThr.start();
 
+    //connect开关串口控制信号 以及是否成功的返回信号
     connect(this, requestOpen, serialController, SerialController::openSerial);
     connect(this, requestClose, serialController, SerialController::closeSerial);
     connect(serialController, SerialController::openSuccess, this, serialOpened);
     connect(serialController, SerialController::openFailed, this, serialNotOpened);
     connect(serialController, SerialController::closeSuccess, this, serialClosed);
+    //connect波特率等参数的控制信号
     connect(this, setBaudRate, serialController, SerialController::getBaudrate);
     connect(this, setStopBits, serialController, SerialController::getStopbits);
     connect(this, setDataBits, serialController, SerialController::getDatabits);
@@ -187,7 +189,9 @@ MainWidget::MainWidget(QWidget *parent)
 
 void MainWidget::CheckSerials()
 {
-    emit sendDateTime(QDateTime::currentDateTime().toString());
+    //不断检查可用串口列表，并与当前列表进行比较，若发生变化则重新生成列表
+    emit sendDateTime(QDateTime::currentDateTime().toString());//更新状态栏时间
+
     QList<QSerialPortInfo> SerialList = QSerialPortInfo::availablePorts();
     if (!SerialList.isEmpty())
     {
@@ -200,6 +204,7 @@ void MainWidget::CheckSerials()
         }
         if (COMList != TmpComList)
         {
+            //TODO: 可用串口发生改变却不为空时，保持串口打开状态，及其他细节的处理
             //只在串口发生变化时刷新ComboBox
             COMList = TmpComList;
             PortNameList = TmpPortNameList;
@@ -208,11 +213,13 @@ void MainWidget::CheckSerials()
             COMBox->clear();
             COMBox->addItems(PortNameList);
             OpenButton->setDisabled(false);
-            for (int i = 0; i < COMList.count(); i++)
+            for (int i = 0; i < COMList.count(); i++)   //为串口列表增加ToolTip
+            {
                 COMBox->setItemData(i, DescList[i], Qt::ToolTipRole);
+            }
         }
     }
-    else
+    else    //可用串口为空时发送关闭串口信号
     {
         COMBox->clear();
         COMList.clear();
@@ -238,13 +245,17 @@ void MainWidget::serialOpened()
     isOpened = true;
     int portIndex = COMBox->currentIndex();
     emit sendStatus(QString(PortNameList[portIndex] + tr(" ") + DescList[portIndex]));
+    //串口关闭时无法设置RTS,DTR信号（但此时checkbox仍然是可操作的），串口打开时发送stateChanged信号来应用改变
     emit RTSBox->stateChanged(RTSBox->checkState());
     emit DTRBox->stateChanged(DTRBox->checkState());
+    //相应控件可用性做出改变(setDisabled)
     ACtionAttachToSerial(true);
 }
 
 void MainWidget::serialNotOpened()
 {
+    //设置状态栏 并发出警告音
+    //TODO: 此处应有更容易察觉的提示
     emit sendStatus(tr("串口打开失败"));
     QApplication::beep();
 }
@@ -252,6 +263,7 @@ void MainWidget::serialNotOpened()
 void MainWidget::serialClosed()
 {
     isOpened = false;
+    //相应控件可用性做出改变(setDisabled)
     ACtionAttachToSerial(false);
     emit sendStatus(tr("串口已关闭"));
 }
@@ -259,6 +271,8 @@ void MainWidget::serialClosed()
 void MainWidget::getRecv(QByteArray recv)
 {
     RecvArea->moveCursor(QTextCursor::End);
+    //需要时将受到的数据进行16进制转换
+    //TODO: 支持更多编码（可选择）
     if (!isRecvHex)
         RecvArea->textCursor().insertText(QString::fromLocal8Bit(recv));
     else
@@ -315,6 +329,7 @@ void MainWidget::changeSendTimer()
 
 void MainWidget::detHex(int state)
 {
+    //TODO: 换行也可以作为16进制的分隔符
     if (state == 2)
     {
         isSendHex = true;
@@ -371,6 +386,7 @@ void MainWidget::DTRControl(int state)
 
 QString MainWidget::HexStringToString(QString hexstr)
 {
+    //将内容为16进制字符串的string转换成16进制对应的内容
     QStringList list = hexstr.split(' ');
     QByteArray bit;
     foreach (QString str, list)
@@ -383,6 +399,7 @@ QString MainWidget::HexStringToString(QString hexstr)
 
 void MainWidget::ACtionAttachToSerial(bool set)
 {
+    //根据串口开关状态决定一些控件的可用性
     if(set)
     {
         OpenButton->setText(tr("关闭串口"));
