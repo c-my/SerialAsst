@@ -1,4 +1,4 @@
-#ifndef SERIALCONTROLLER_H
+﻿#ifndef SERIALCONTROLLER_H
 #define SERIALCONTROLLER_H
 
 #include <QObject>

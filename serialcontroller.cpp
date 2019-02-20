@@ -1,9 +1,9 @@
-#include "serialcontroller.h"
+﻿#include "serialcontroller.h"
 
 SerialController::SerialController(QObject *parent) : QObject(parent)
 {
     serial = new QSerialPort(this);
-    connect(serial, QSerialPort::readyRead, this, handleRecv);
+    connect(serial, &QSerialPort::readyRead, this, &SerialController::handleRecv);
 }
 
 void SerialController::openSerial(QString name)

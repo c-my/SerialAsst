@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
                                           widget(new MainWidget(this)),
@@ -15,14 +15,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     helpMenu->addAction(aboutAct);
     setCentralWidget(widget);
     statusbar->showMessage(tr("准备就绪"));
-    connect(widget, MainWidget::sendStatus, this, setNewMsg);
+    connect(widget, &MainWidget::sendStatus, this, &MainWindow::setNewMsg);
     timeLabel = new QLabel(statusbar);
     statusBar()->addPermanentWidget(timeLabel);
     timeLabel->setText(QDateTime::currentDateTime().toString());
 
-    connect(aboutQtAct, &QAction::triggered, this, &showAboutQt);
-    connect(aboutAct, &QAction::triggered, this, showAbout);
-    connect(widget, MainWidget::sendDateTime, this, setDateTime);
+    connect(aboutQtAct, &QAction::triggered, this, &MainWindow::showAboutQt);
+    connect(aboutAct, &QAction::triggered, this, &MainWindow::showAbout);
+    connect(widget, &MainWidget::sendDateTime, this, &MainWindow::setDateTime);
     resize(900, 600);
 }
 
@@ -47,10 +47,22 @@ void MainWindow::showAbout()
     QMessageBox *aboutWindow = new QMessageBox(this);
     aboutWindow->setStandardButtons(QMessageBox::Ok);
     aboutWindow->setText(tr("<h1>SerialAsst</h1>"
-                             "<p>Based on Qt 5.10.1 (MinGW 5.3.0, 32bit)</p>"
+                             "<p>Based on Qt 5.10.1 (") +
+                            getCompilerVersion() +
+                            tr(")</p>"
                              "Source Code: <a href=\"https://github.com/c-my/SerialAsst\">https://github.com/c-my/SerialAsst</a><br/>"
                             "Email: "
                             "<address><a href=\"mailto:cmy1113@outlook.com?subject=SerialAsst Feedback\">cmy1113@outlook.com</a>"
                             "</address>"));
     aboutWindow->show();
+}
+
+QString MainWindow::getCompilerVersion()
+{
+#ifdef __GNUC__
+    return tr("GCC ")QString::number(__GNUC__)+tr(".")+QString::number(__GNUC_MINOR__)+tr(".")+QString::number(__GNUC_PATCHLEVEL__);
+#endif
+#ifdef _MSC_VER
+    return tr("MSVC ") + QString::number(_MSC_FULL_VER);
+#endif
 }

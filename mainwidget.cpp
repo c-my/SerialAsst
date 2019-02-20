@@ -1,4 +1,4 @@
-#include "mainwidget.h"
+﻿#include "mainwidget.h"
 
 MainWidget::MainWidget(QWidget *parent)
     : QWidget(parent), settings("TurnMeOn", "SerialAsst")
@@ -69,10 +69,10 @@ MainWidget::MainWidget(QWidget *parent)
     ClearRecvButton = new QPushButton(tr("清除接收"));
     ClearSendButton = new QPushButton(tr("清除发送"));
 
-    connect(OpenButton, QPushButton::clicked, this, OpenSerial);
-    connect(SendButton, QPushButton::clicked, this, SendContent);
-    connect(ClearRecvButton, QPushButton::clicked, this, ClearRecv);
-    connect(ClearSendButton, QPushButton::clicked, this, ClearSend);
+    connect(OpenButton, &QPushButton::clicked, this, &MainWidget::OpenSerial);
+    connect(SendButton, &QPushButton::clicked, this, &MainWidget::SendContent);
+    connect(ClearRecvButton, &QPushButton::clicked, this, &MainWidget::ClearRecv);
+    connect(ClearSendButton, &QPushButton::clicked, this, &MainWidget::ClearSend);
 
     //复选框
     NewLineBox = new QCheckBox(tr("发送新行"));
@@ -84,12 +84,12 @@ MainWidget::MainWidget(QWidget *parent)
     DTRBox = new QCheckBox(tr("DTR"));
 
     //绑定复选框信号
-    connect(NewLineBox, QCheckBox::stateChanged, this, detNewLine);
-    connect(TimerBox, QCheckBox::stateChanged, this, ControlSendTimer);
-    connect(HexSend, QCheckBox::stateChanged, this, detHex);
-    connect(HexRecv, QCheckBox::stateChanged, this, detRecvHex);
-    connect(RTSBox, QCheckBox::stateChanged, this, RTSControl);
-    connect(DTRBox, QCheckBox::stateChanged, this, DTRControl);
+    connect(NewLineBox, &QCheckBox::stateChanged, this, &MainWidget::detNewLine);
+    connect(TimerBox, &QCheckBox::stateChanged, this, &MainWidget::ControlSendTimer);
+    connect(HexSend, &QCheckBox::stateChanged, this, &MainWidget::detHex);
+    connect(HexRecv, &QCheckBox::stateChanged, this, &MainWidget::detRecvHex);
+    connect(RTSBox, &QCheckBox::stateChanged, this, &MainWidget::RTSControl);
+    connect(DTRBox, &QCheckBox::stateChanged, this, &MainWidget::DTRControl);
 
     //定时发送spinbox
     TimerSpin = new QSpinBox();
@@ -98,7 +98,7 @@ MainWidget::MainWidget(QWidget *parent)
     TimerSpin->setValue(1000);
     //valueChanged有多个重载
     connect(TimerSpin, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged),
-            this, changeSendTimer);
+            this, &MainWidget::changeSendTimer);
 
     //初始化布局
     leftLlayout = new QFormLayout();
@@ -155,8 +155,8 @@ MainWidget::MainWidget(QWidget *parent)
     CheckTimer = new QTimer(this);
     CheckTimer->start(1000);
     SendTimer = new QTimer(this);
-    connect(CheckTimer, QTimer::timeout, this, CheckSerials);
-    connect(SendTimer, QTimer::timeout, SendButton, QPushButton::click);
+    connect(CheckTimer, &QTimer::timeout, this, &MainWidget::CheckSerials);
+    connect(SendTimer, &QTimer::timeout, SendButton, &QPushButton::click);
 
     //初始化串口列表
     CheckSerials();
@@ -167,24 +167,24 @@ MainWidget::MainWidget(QWidget *parent)
     SerialThr.start();
 
     //connect开关串口控制信号 以及是否成功的返回信号
-    connect(this, requestOpen, serialController, SerialController::openSerial);
-    connect(this, requestClose, serialController, SerialController::closeSerial);
-    connect(serialController, SerialController::openSuccess, this, serialOpened);
-    connect(serialController, SerialController::openFailed, this, serialNotOpened);
-    connect(serialController, SerialController::closeSuccess, this, serialClosed);
+    connect(this, &MainWidget::requestOpen, serialController, &SerialController::openSerial);
+    connect(this, &MainWidget::requestClose, serialController, &SerialController::closeSerial);
+    connect(serialController, &SerialController::openSuccess, this, &MainWidget::serialOpened);
+    connect(serialController, &SerialController::openFailed, this, &MainWidget::serialNotOpened);
+    connect(serialController, &SerialController::closeSuccess, this, &MainWidget::serialClosed);
     //connect波特率等参数的控制信号
-    connect(this, setBaudRate, serialController, SerialController::getBaudrate);
-    connect(this, setStopBits, serialController, SerialController::getStopbits);
-    connect(this, setDataBits, serialController, SerialController::getDatabits);
-    connect(this, setParity, serialController, SerialController::getParity);
-    connect(BaudrateBox, QComboBox::currentTextChanged, serialController, SerialController::getBaudrate);
-    connect(StopbitsBox, QComboBox::currentTextChanged, serialController, SerialController::getStopbits);
-    connect(DatabitsBox, QComboBox::currentTextChanged, serialController, SerialController::getDatabits);
-    connect(ParityBox, QComboBox::currentTextChanged, serialController, SerialController::getParity);
-    connect(this, changeRTS, serialController, SerialController::contrloRTS);
-    connect(this, changeDTR, serialController, SerialController::controlDTR);
-    connect(this, sendData, serialController, SerialController::writeData);
-    connect(serialController, SerialController::recvData, this, getRecv);
+    connect(this, &MainWidget::setBaudRate, serialController, &SerialController::getBaudrate);
+    connect(this, &MainWidget::setStopBits, serialController, &SerialController::getStopbits);
+    connect(this, &MainWidget::setDataBits, serialController, &SerialController::getDatabits);
+    connect(this, &MainWidget::setParity, serialController, &SerialController::getParity);
+    connect(BaudrateBox, &QComboBox::currentTextChanged, serialController, &SerialController::getBaudrate);
+    connect(StopbitsBox, &QComboBox::currentTextChanged, serialController, &SerialController::getStopbits);
+    connect(DatabitsBox, &QComboBox::currentTextChanged, serialController, &SerialController::getDatabits);
+    connect(ParityBox, &QComboBox::currentTextChanged, serialController, &SerialController::getParity);
+    connect(this, &MainWidget::changeRTS, serialController, &SerialController::contrloRTS);
+    connect(this, &MainWidget::changeDTR, serialController, &SerialController::controlDTR);
+    connect(this, &MainWidget::sendData, serialController, &SerialController::writeData);
+    connect(serialController, &SerialController::recvData, this, &MainWidget::getRecv);
 }
 
 void MainWidget::CheckSerials()
@@ -405,16 +405,16 @@ void MainWidget::ACtionAttachToSerial(bool set)
         OpenButton->setText(tr("关闭串口"));
         COMBox->setDisabled(true);
         SendButton->setDisabled(false);
-        disconnect(OpenButton, QPushButton::clicked, this, OpenSerial);
-        connect(OpenButton, QPushButton::clicked, this, CloseSerial);
+        disconnect(OpenButton, &QPushButton::clicked, this, &MainWidget::OpenSerial);
+        connect(OpenButton, &QPushButton::clicked, this, &MainWidget::CloseSerial);
     }
     else
     {
         OpenButton->setText(tr("打开串口"));
         COMBox->setDisabled(false);
         SendButton->setDisabled(true);
-        disconnect(OpenButton, QPushButton::clicked, this, CloseSerial);
-        connect(OpenButton, QPushButton::clicked, this, OpenSerial);
+        disconnect(OpenButton, &QPushButton::clicked, this, &MainWidget::CloseSerial);
+        connect(OpenButton, &QPushButton::clicked, this, &MainWidget::OpenSerial);
     }
 }
 
@@ -432,7 +432,7 @@ bool MainWidget::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == SendArea && event->type() == QEvent::KeyPress)
     {
-        QKeyEvent *e = (QKeyEvent *)event;
+        QKeyEvent *e = reinterpret_cast<QKeyEvent *>(event);
         if (e->modifiers() == Qt::ControlModifier)
         {
             switch (e->key())
