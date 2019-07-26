@@ -60,7 +60,7 @@ void MainWindow::showAbout()
 QString MainWindow::getCompilerVersion()
 {
 #ifdef __GNUC__
-    return tr("GCC ")QString::number(__GNUC__)+tr(".")+QString::number(__GNUC_MINOR__)+tr(".")+QString::number(__GNUC_PATCHLEVEL__);
+    return tr("GCC ") + QString::number(__GNUC__)+tr(".")+QString::number(__GNUC_MINOR__)+tr(".")+QString::number(__GNUC_PATCHLEVEL__);
 #endif
 #ifdef _MSC_VER
     return tr("MSVC ") + QString::number(_MSC_FULL_VER);
