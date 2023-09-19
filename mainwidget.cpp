@@ -109,7 +109,7 @@ MainWidget::MainWidget(QWidget *parent)
     leftLlayout->addRow(COMLabel, COMBox);
     leftLlayout->addRow(OpenButton);
     leftLlayout->setAlignment(OpenButton, Qt::AlignVCenter);
-    leftLlayout->setMargin(30);
+    leftLlayout->setContentsMargins(30, 30, 30, 30);
     leftLlayout->setHorizontalSpacing(20);
     leftLlayout->setVerticalSpacing(60);
 
@@ -190,14 +190,13 @@ MainWidget::MainWidget(QWidget *parent)
 void MainWidget::CheckSerials()
 {
     //不断检查可用串口列表，并与当前列表进行比较，若发生变化则重新生成列表
-    emit sendDateTime(QDateTime::currentDateTime().toString());//更新状态栏时间
+    emit sendDateTime(QDateTime::currentDateTime().toString(Qt::ISODate)); //更新状态栏时间
 
     QList<QSerialPortInfo> SerialList = QSerialPortInfo::availablePorts();
     if (!SerialList.isEmpty())
     {
         QStringList TmpComList, TmpPortNameList, TmpDesList;
-        for (QSerialPortInfo serial : SerialList)
-        {
+        for (QSerialPortInfo &serial : SerialList) {
             TmpComList << serial.portName() + " " + serial.description();
             TmpPortNameList << serial.portName();
             TmpDesList << serial.description();
@@ -226,7 +225,7 @@ void MainWidget::CheckSerials()
         COMBox->addItem(tr("(空)"));
         COMBox->setDisabled(true);
         OpenButton->setDisabled(true);
-        emit CloseSerial();
+        CloseSerial();
         isOpened = false;
     }
 }

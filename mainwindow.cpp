@@ -47,13 +47,16 @@ void MainWindow::showAbout()
     QMessageBox *aboutWindow = new QMessageBox(this);
     aboutWindow->setStandardButtons(QMessageBox::Ok);
     aboutWindow->setText(tr("<h1>SerialAsst</h1>"
-                             "<p>Based on Qt 5.10.1 (") +
-                            getCompilerVersion() +
-                            tr(")</p>"
-                             "Source Code: <a href=\"https://github.com/c-my/SerialAsst\">https://github.com/c-my/SerialAsst</a><br/>"
-                            "Email: "
-                            "<address><a href=\"mailto:cmy1113@outlook.com?subject=SerialAsst Feedback\">cmy1113@outlook.com</a>"
-                            "</address>"));
+                            "<p>Based on Qt ")
+                         + QT_VERSION_STR + " (" + getCompilerVersion()
+                         + tr(")</p>"
+                              "Source Code: <a "
+                              "href=\"https://github.com/c-my/SerialAsst\">https://github.com/c-my/"
+                              "SerialAsst</a><br/>"
+                              "Email: "
+                              "<address><a href=\"mailto:cmy1113@outlook.com?subject=SerialAsst "
+                              "Feedback\">cai.my@outlook.com</a>"
+                              "</address>"));
     aboutWindow->show();
 }
 
