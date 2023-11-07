@@ -38,8 +38,8 @@ void MainWindow::setDateTime(QString datetime)
 
 void MainWindow::showAboutQt()
 {
-      QMessageBox *aboutQtWindow = new QMessageBox(this);
-      aboutQtWindow->aboutQt(this);
+    QMessageBox *aboutQtWindow = new QMessageBox(this);
+    aboutQtWindow->aboutQt(this);
 }
 
 void MainWindow::showAbout()

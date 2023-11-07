@@ -180,7 +180,7 @@ MainWidget::MainWidget(QWidget *parent)
     CheckSerials();
 
     //开始串口进程
-    serialController = new SerialController;
+    serialController = new SerialController(this);
 
     //connect开关串口控制信号 以及是否成功的返回信号
     connect(this, &MainWidget::requestOpen, serialController, &SerialController::openSerial);
