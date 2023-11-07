@@ -6,9 +6,9 @@ SerialController::SerialController(QObject *parent) : QObject(parent)
     connect(serial, &QSerialPort::readyRead, this, &SerialController::handleRecv);
 }
 
-void SerialController::openSerial(QString name)
+void SerialController::openSerial(const QString &name)
 {
-    serial->setPortName(name);
+    serial->setPortName(name.split(" ").at(0));
     if (serial->open(QIODevice::ReadWrite))
     {
         //串口打开成功
@@ -32,12 +32,12 @@ void SerialController::closeSerial()
     }
 }
 
-void SerialController::getBaudrate(QString baudrate)
+void SerialController::getBaudrate(const QString &baudrate)
 {
     serial->setBaudRate(baudrate.toInt());
 }
 
-void SerialController::getStopbits(QString stopbits)
+void SerialController::getStopbits(const QString &stopbits)
 {
     if (stopbits == "1")
         serial->setStopBits(QSerialPort::OneStop);
@@ -47,12 +47,12 @@ void SerialController::getStopbits(QString stopbits)
         serial->setStopBits(QSerialPort::TwoStop);
 }
 
-void SerialController::getDatabits(QString databits)
+void SerialController::getDatabits(const QString &databits)
 {
     serial->setDataBits(QSerialPort::DataBits(databits.toInt()));
 }
 
-void SerialController::getParity(QString parity)
+void SerialController::getParity(const QString &parity)
 {
     if (parity == tr("无"))
         serial->setParity(QSerialPort::NoParity);
@@ -64,11 +64,22 @@ void SerialController::getParity(QString parity)
         serial->setParity(QSerialPort::EvenParity);
 }
 
-void SerialController::writeData(QString content)
+void SerialController::getFlowControl(const QString &flowControl)
 {
-    if (serial->isWritable())
-    {
-        qint64 result = serial->write(content.toLocal8Bit().data());
+    if (flowControl == tr("无")) {
+        serial->setFlowControl(QSerialPort::NoFlowControl);
+    } else if (flowControl == tr("硬件")) {
+        serial->setFlowControl(QSerialPort::HardwareControl);
+
+    } else if (flowControl == tr("软件")) {
+        serial->setFlowControl(QSerialPort::SoftwareControl);
+    }
+}
+
+void SerialController::writeData(const QByteArray &content)
+{
+    if (serial->isWritable()) {
+        qint64 result = serial->write(content);
         if (result == -1)
             emit writeFailed();
         else

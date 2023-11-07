@@ -26,9 +26,11 @@ MainWidget::MainWidget(QWidget *parent)
                  << "6"
                  << "5";
     ParityList << tr("无") << tr("奇校验") << tr("偶校验");
+    FlowControlList << tr("无") << tr("硬件") << tr("软件");
 
     //初始化ComboBox
     COMBox = new QComboBox();
+    COMBox->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Preferred);
     BaudrateBox = new QComboBox();
     BaudrateBox->addItems(BaudrateList);
     BaudrateBox->setCurrentIndex(settings.value("Baud rate", 0).toInt());
@@ -41,6 +43,9 @@ MainWidget::MainWidget(QWidget *parent)
     ParityBox = new QComboBox();
     ParityBox->addItems(ParityList);
     ParityBox->setCurrentIndex(settings.value("Parity", 0).toInt());
+    FlowControlBox = new QComboBox();
+    FlowControlBox->addItems(FlowControlList);
+    FlowControlBox->setCurrentIndex(settings.value("Flow Control", 0).toInt());
 
     //初始化label
     COMLabel = new QLabel(tr("串口号"));
@@ -48,17 +53,24 @@ MainWidget::MainWidget(QWidget *parent)
     StopbitsLabel = new QLabel(tr("停止位"));
     DatabitsLabel = new QLabel(tr("数据位"));
     ParityLabel = new QLabel(tr("校验位"));
+    FlowControlLabel = new QLabel(tr("流控"));
 
     //发送与接受区域
-    RecvArea = new QTextEdit();
+    RecvArea = new QPlainTextEdit();
     RecvArea->setReadOnly(true);
     QPalette pal;
     pal.setColor(QPalette::Base, Qt::black);
     pal.setColor(QPalette::Text, Qt::green);
     RecvArea->setPalette(pal);
-    SendArea = new QTextEdit();
-    RecvArea->setFont(QFont(tr("Microsoft YaHei UI"), 10));
-    SendArea->setFont(QFont(tr("Microsoft YaHei UI Light"), 12));
+    SendArea = new QPlainTextEdit();
+
+    QFont areaFont = SendArea->font();
+    areaFont.setPointSize(11);
+    SendArea->setFont(areaFont);
+    areaFont.setPointSize(11);
+    RecvArea->setFont(areaFont);
+    //    RecvArea->setFont(QFont(tr("Microsoft YaHei UI"), 10));
+    //    SendArea->setFont(QFont(tr("Microsoft YaHei UI Light"), 12));
     SendArea->installEventFilter(this);
 
     //按钮
@@ -80,8 +92,14 @@ MainWidget::MainWidget(QWidget *parent)
     HexSend = new QCheckBox(tr("发送16进制"));
     HexRecv = new QCheckBox(tr("接收16进制"));
     HexSend->setToolTip(tr("以空格作为间隔符， \n非法字符及其后面的字符将被忽略"));
+
+    // RTS和 DTR复选框
     RTSBox = new QCheckBox(tr("RTS"));
     DTRBox = new QCheckBox(tr("DTR"));
+
+    flowControlLayout = new QHBoxLayout();
+    flowControlLayout->addWidget(RTSBox);
+    flowControlLayout->addWidget(DTRBox);
 
     //绑定复选框信号
     connect(NewLineBox, &QCheckBox::stateChanged, this, &MainWidget::detNewLine);
@@ -106,14 +124,16 @@ MainWidget::MainWidget(QWidget *parent)
     leftLlayout->addRow(StopbitsLabel, StopbitsBox);
     leftLlayout->addRow(DatabitsLabel, DatabitsBox);
     leftLlayout->addRow(ParityLabel, ParityBox);
+    leftLlayout->addRow(FlowControlLabel, FlowControlBox);
+    leftLlayout->addRow(flowControlLayout);
     leftLlayout->addRow(COMLabel, COMBox);
     leftLlayout->addRow(OpenButton);
     leftLlayout->setAlignment(OpenButton, Qt::AlignVCenter);
-    leftLlayout->setContentsMargins(30, 30, 30, 30);
+    leftLlayout->setContentsMargins(15, 25, 15, 25);
     leftLlayout->setHorizontalSpacing(20);
-    leftLlayout->setVerticalSpacing(60);
+    leftLlayout->setVerticalSpacing(20);
 
-    paramGroup = new QGroupBox();
+    paramGroup = new QGroupBox(tr("串口参数"));
     paramGroup->setLayout(leftLlayout);
     paramGroup->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
@@ -132,8 +152,6 @@ MainWidget::MainWidget(QWidget *parent)
     rightLayout = new QVBoxLayout();
     rightLayout->addWidget(ClearRecvButton, 0, Qt::AlignCenter);
     rightLayout->addWidget(HexRecv);
-    rightLayout->addWidget(RTSBox);
-    rightLayout->addWidget(DTRBox);
 
     centralLayout = new QGridLayout(this);
 
@@ -163,8 +181,6 @@ MainWidget::MainWidget(QWidget *parent)
 
     //开始串口进程
     serialController = new SerialController;
-    serialController->moveToThread(&SerialThr);
-    SerialThr.start();
 
     //connect开关串口控制信号 以及是否成功的返回信号
     connect(this, &MainWidget::requestOpen, serialController, &SerialController::openSerial);
@@ -177,7 +193,11 @@ MainWidget::MainWidget(QWidget *parent)
     connect(this, &MainWidget::setStopBits, serialController, &SerialController::getStopbits);
     connect(this, &MainWidget::setDataBits, serialController, &SerialController::getDatabits);
     connect(this, &MainWidget::setParity, serialController, &SerialController::getParity);
-    connect(BaudrateBox, &QComboBox::currentTextChanged, serialController, &SerialController::getBaudrate);
+    connect(this, &MainWidget::setFlowControl, serialController, &SerialController::getFlowControl);
+    connect(BaudrateBox,
+            &QComboBox::currentTextChanged,
+            serialController,
+            &SerialController::getBaudrate);
     connect(StopbitsBox, &QComboBox::currentTextChanged, serialController, &SerialController::getStopbits);
     connect(DatabitsBox, &QComboBox::currentTextChanged, serialController, &SerialController::getDatabits);
     connect(ParityBox, &QComboBox::currentTextChanged, serialController, &SerialController::getParity);
@@ -187,14 +207,14 @@ MainWidget::MainWidget(QWidget *parent)
     connect(serialController, &SerialController::recvData, this, &MainWidget::getRecv);
 }
 
-void MainWidget::CheckSerials()
+void MainWidget::CheckSerials(bool firstCheck)
 {
     //不断检查可用串口列表，并与当前列表进行比较，若发生变化则重新生成列表
     emit sendDateTime(QDateTime::currentDateTime().toString(Qt::ISODate)); //更新状态栏时间
 
     QList<QSerialPortInfo> SerialList = QSerialPortInfo::availablePorts();
-    if (!SerialList.isEmpty())
-    {
+
+    if (!SerialList.isEmpty()) {
         QStringList TmpComList, TmpPortNameList, TmpDesList;
         for (QSerialPortInfo &serial : SerialList) {
             TmpComList << serial.portName() + " " + serial.description();
@@ -210,15 +230,16 @@ void MainWidget::CheckSerials()
             DescList = TmpDesList;
             COMBox->setDisabled(false);
             COMBox->clear();
-            COMBox->addItems(PortNameList);
+            //            COMBox->addItems(PortNameList);
+            COMBox->addItems(COMList);
+
             OpenButton->setDisabled(false);
             for (int i = 0; i < COMList.count(); i++)   //为串口列表增加ToolTip
             {
                 COMBox->setItemData(i, DescList[i], Qt::ToolTipRole);
             }
         }
-    }
-    else    //可用串口为空时发送关闭串口信号
+    } else //可用串口为空时发送关闭串口信号
     {
         COMBox->clear();
         COMList.clear();
@@ -232,11 +253,12 @@ void MainWidget::CheckSerials()
 
 MainWidget::~MainWidget()
 {
-    SerialThr.terminate();
+    //    SerialThr.terminate();
     settings.setValue("Baud rate", BaudrateBox->currentIndex());
     settings.setValue("Stop bits", StopbitsBox->currentIndex());
     settings.setValue("Data bits", DatabitsBox->currentIndex());
     settings.setValue("Parity", ParityBox->currentIndex());
+    settings.setValue("Flow Control", FlowControlBox->currentIndex());
 }
 
 void MainWidget::serialOpened()
@@ -248,7 +270,7 @@ void MainWidget::serialOpened()
     emit RTSBox->stateChanged(RTSBox->checkState());
     emit DTRBox->stateChanged(DTRBox->checkState());
     //相应控件可用性做出改变(setDisabled)
-    ACtionAttachToSerial(true);
+    ActionAttachToSerial(true);
 }
 
 void MainWidget::serialNotOpened()
@@ -263,11 +285,11 @@ void MainWidget::serialClosed()
 {
     isOpened = false;
     //相应控件可用性做出改变(setDisabled)
-    ACtionAttachToSerial(false);
+    ActionAttachToSerial(false);
     emit sendStatus(tr("串口已关闭"));
 }
 
-void MainWidget::getRecv(QByteArray recv)
+void MainWidget::getRecv(const QByteArray &recv)
 {
     RecvArea->moveCursor(QTextCursor::End);
     //需要时将受到的数据进行16进制转换
@@ -276,18 +298,21 @@ void MainWidget::getRecv(QByteArray recv)
         RecvArea->textCursor().insertText(QString::fromLocal8Bit(recv));
     else
     {
-        RecvArea->textCursor().insertText(QString(recv.toHex()) + tr(" "));
+        if (!RecvArea->toPlainText().isEmpty())
+            RecvArea->textCursor().insertText(QChar(HEX_SEPARATOR));
+        RecvArea->textCursor().insertText(QString(recv.toHex(HEX_SEPARATOR)));
     }
 }
 
 void MainWidget::OpenSerial()
 {
     QString portName = COMBox->currentText();
-    emit requestOpen(portName);
     emit setBaudRate(BaudrateBox->currentText());
     emit setStopBits(StopbitsBox->currentText());
     emit setDataBits(DatabitsBox->currentText());
     emit setParity(ParityBox->currentText());
+    emit setFlowControl(FlowControlBox->currentText());
+    emit requestOpen(portName);
 }
 
 void MainWidget::CloseSerial()
@@ -332,14 +357,14 @@ void MainWidget::detHex(int state)
     if (state == 2)
     {
         isSendHex = true;
-        SendArea->setText(SendArea->toPlainText().toLocal8Bit().toHex(' '));
+        //        SendArea->setPlainText(SendArea->toPlainText().toLocal8Bit().toHex(' '));
     }
     else if (state == 0)
     {
         isSendHex = false;
-        QString tmpstr = SendArea->toPlainText();
-        SendArea->clear();
-        SendArea->setText(HexStringToString(tmpstr));
+        //        QString tmpstr = SendArea->toPlainText();
+        //        SendArea->clear();
+        //        SendArea->setPlainText(HexStringToString(tmpstr));
     }
 }
 
@@ -348,16 +373,16 @@ void MainWidget::detRecvHex(int state)
     if (state == 2)
     {
         isRecvHex = true;
-        RecvArea->setText(RecvArea->toPlainText().toLocal8Bit().toHex(' '));
-        RecvArea->moveCursor(QTextCursor::End);
-        RecvArea->insertPlainText(tr(" "));
+        //        RecvArea->setPlainText(RecvArea->toPlainText().toLocal8Bit().toHex(' '));
+        //        RecvArea->moveCursor(QTextCursor::End);
+        //        RecvArea->insertPlainText(tr(" "));
     }
     else if (state == 0)
     {
         isRecvHex = false;
-        QString tmpstr = RecvArea->toPlainText();
-        RecvArea->clear();
-        RecvArea->setText(HexStringToString(tmpstr));
+        //        QString tmpstr = RecvArea->toPlainText();
+        //        RecvArea->clear();
+        //        RecvArea->setPlainText(HexStringToString(tmpstr));
     }
 }
 
@@ -383,20 +408,50 @@ void MainWidget::DTRControl(int state)
     }
 }
 
-QString MainWidget::HexStringToString(QString hexstr)
+QByteArray MainWidget::HexStringToString(const QString &hexstr)
 {
     //将内容为16进制字符串的string转换成16进制对应的内容
     QStringList list = hexstr.split(' ');
-    QByteArray bit;
-    foreach (QString str, list)
-    {
-        if (!str.isEmpty())
-            bit.append(str.toInt(nullptr, 16));
+    QByteArray bytes;
+    char currentByte{0};
+    bool hasReadFirstChar = false;
+    for (auto ch : hexstr) {
+        auto ascii = ch.toLatin1();
+        if (ch == ' ') { // 允许空格
+            continue;
+        }
+        auto numHex = convertAsciiToHex(ascii);
+        if (numHex < 0) {
+            return bytes;
+        }
+
+        if (!hasReadFirstChar) {
+            currentByte += (numHex - '0') << 4;
+            hasReadFirstChar = true;
+        } else {
+            currentByte += numHex;
+            bytes.append(currentByte);
+            hasReadFirstChar = false;
+            currentByte = 0;
+        }
     }
-    return QString::fromLocal8Bit(bit);
+    return bytes;
 }
 
-void MainWidget::ACtionAttachToSerial(bool set)
+char MainWidget::convertAsciiToHex(char ascii)
+{
+    if (ascii >= '0' && ascii <= '9') {
+        return ascii - '0';
+    } else if (ascii >= 'a' && ascii <= 'f') {
+        return 10 + ascii - 'a';
+    } else if (ascii >= 'A' && ascii <= 'F') {
+        return 10 + ascii - 'A';
+    } else {
+        return -1;
+    }
+}
+
+void MainWidget::ActionAttachToSerial(bool set)
 {
     //根据串口开关状态决定一些控件的可用性
     if(set)
@@ -420,11 +475,16 @@ void MainWidget::ACtionAttachToSerial(bool set)
 void MainWidget::SendContent()
 {
     QString content = SendArea->toPlainText();
-    if (isSendHex)
-        content = HexStringToString(content);
+    QByteArray bytes;
     if (isSendNewLine)
-        content += "\r\n";
-    emit sendData(content);
+        content += "\n";
+    if (isSendHex) {
+        bytes = HexStringToString(content);
+    } else {
+        bytes = content.toLatin1();
+    }
+
+    emit sendData(bytes);
 }
 
 bool MainWidget::eventFilter(QObject *watched, QEvent *event)

@@ -9,6 +9,9 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_compile_options("$<$<C_COMPILER_ID:MSVC>:/utf-8>")
+add_compile_options("$<$<CXX_COMPILER_ID:MSVC>:/utf-8>")
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS SerialPort)
@@ -43,12 +46,14 @@ else()
     else()
         add_executable(SerialAsst
             ${PROJECT_SOURCES}
+            ${app_icon_resource_windows}
+            resource.qrc
         )
     endif()
 endif()
 
 target_link_libraries(SerialAsst PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
-target_link_libraries(SerialAsst PRIVATE Qt6::SerialPort)
+target_link_libraries(SerialAsst PRIVATE Qt${QT_VERSION_MAJOR}::SerialPort)
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an

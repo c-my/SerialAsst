@@ -16,21 +16,22 @@ signals:
   void closeSuccess();               //串口关闭成功
   void writeSuccess(int len);        //串口发送成功 len为成功发送的字节
   void writeFailed();                //串口发送失败
-  void recvData(QByteArray content); //发送接收到的数据
+  void recvData(const QByteArray &content); //发送接收到的数据
 
-public slots:
-  void openSerial(QString name);
+  public slots:
+  void openSerial(const QString &name);
   void closeSerial();
-  void getBaudrate(QString baudrate); //改变波特率
-  void getStopbits(QString stopbits); //改变停止位
-  void getDatabits(QString databits); //改变数据为
-  void getParity(QString parity);     //改变校验位
-  void writeData(QString content);    //发送数据
-  void handleRecv();                  //接受数据
-  void contrloRTS(bool set);          //设置RTS位
-  void controlDTR(bool set);          //设置DTR位
+  void getBaudrate(const QString &baudrate);       //改变波特率
+  void getStopbits(const QString &stopbits);       //改变停止位
+  void getDatabits(const QString &databits);       //改变数据为
+  void getParity(const QString &parity);           //改变校验位
+  void getFlowControl(const QString &flowControl); //改变流控位
+  void writeData(const QByteArray &content);       //发送数据
+  void handleRecv();                               //接受数据
+  void contrloRTS(bool set);                       //设置RTS位
+  void controlDTR(bool set);                       //设置DTR位
 
-private:
+  private:
   QSerialPort *serial;
 };
 

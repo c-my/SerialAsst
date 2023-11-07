@@ -8,8 +8,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent),
     setMenuBar(menuBar);
     setStatusBar(statusbar);
 
-    aboutQtAct = new QAction(/*QIcon(":/pic/icon/qt-icon.png"), */tr("&关于Qt"), this);
-    aboutAct = new QAction(/*QIcon(":/pic/icon/about.png"), */tr("&关于SerialAsst"), this);
+    aboutQtAct = new QAction(QIcon(":/pic/icon/qt-icon.png"), tr("&关于Qt"), this);
+    aboutAct = new QAction(QIcon(":/pic/icon/about.png"), tr("&关于SerialAsst"), this);
     helpMenu = menuBar->addMenu(tr("帮助(&H)"));
     helpMenu->addAction(aboutQtAct);
     helpMenu->addAction(aboutAct);

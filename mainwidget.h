@@ -1,26 +1,26 @@
 ﻿#ifndef MAINWIDGET_H
 #define MAINWIDGET_H
 
-#include <QWidget>
-#include <QComboBox>
-#include <QGridLayout>
 #include <QApplication>
-#include <QVBoxLayout>
+#include <QByteArray>
+#include <QCheckBox>
+#include <QComboBox>
+#include <QDateTime>
+#include <QFormLayout>
+#include <QGridLayout>
+#include <QGroupBox>
 #include <QHBoxLayout>
-#include <QTextEdit>
+#include <QLabel>
 #include <QPlainTextEdit>
 #include <QPushButton>
-#include <QTimer>
 #include <QSerialPortInfo>
-#include <QLabel>
-#include <QCheckBox>
-#include <QSpinBox>
-#include <QThread>
-#include <QDateTime>
-#include <QByteArray>
 #include <QSettings>
-#include <QFormLayout>
-#include <QGroupBox>
+#include <QSpinBox>
+#include <QTextEdit>
+#include <QThread>
+#include <QTimer>
+#include <QVBoxLayout>
+#include <QWidget>
 #include "serialcontroller.h"
 
 class MainWidget : public QWidget
@@ -29,29 +29,30 @@ class MainWidget : public QWidget
 
 public:
   MainWidget(QWidget *parent = 0);
-  void CheckSerials();
+  void CheckSerials(bool firstCheck = true);
   ~MainWidget();
   void SendContent();
   bool eventFilter(QObject *watched, QEvent *event);
 
-signals:
-  void requestOpen(QString portName);
+  signals:
+  void requestOpen(const QString &portName);
   void requestClose();
-  void setBaudRate(QString baudrate);
-  void setStopBits(QString stopbits);
-  void setDataBits(QString databits);
-  void setParity(QString parity);
-  void sendData(QString content);
-  void sendStatus(QString status);     //更新statusbar
-  void sendDateTime(QString datetime); //更新stastatusbar中的时间
+  void setBaudRate(const QString &baudrate);
+  void setStopBits(const QString &stopbits);
+  void setDataBits(const QString &databits);
+  void setParity(const QString &parity);
+  void setFlowControl(const QString &flowControl);
+  void sendData(const QByteArray &content);
+  void sendStatus(const QString &status);     //更新statusbar
+  void sendDateTime(const QString &datetime); //更新stastatusbar中的时间
   void changeRTS(bool set);
   void changeDTR(bool set);
 
-public slots:
+  public slots:
   void serialOpened();           //串口打开成功
   void serialNotOpened();        //串口打开失败
   void serialClosed();           //串口关闭
-  void getRecv(QByteArray recv); //串口接受数据
+  void getRecv(const QByteArray &recv); //串口接受数据
   void OpenSerial();
   void CloseSerial();
   void ClearRecv();
@@ -64,32 +65,34 @@ public slots:
   void RTSControl(int state);
   void DTRControl(int state);
 
-private:
-  QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox;
-  QStringList BaudrateList, StopbitsList, DatabitsList, ParityList;
+  private:
+  QComboBox *COMBox, *BaudrateBox, *StopbitsBox, *DatabitsBox, *ParityBox, *FlowControlBox;
+  QStringList BaudrateList, StopbitsList, DatabitsList, ParityList, FlowControlList;
   QStringList COMList, PortNameList, DescList;
-  QLabel *COMLabel, *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel;
+  QLabel *COMLabel, *BaudrateLabel, *StopbitsLabel, *DatabitsLabel, *ParityLabel, *FlowControlLabel;
   QGridLayout *centralLayout;
   QVBoxLayout *cvlayout, *rightLayout;
-  QHBoxLayout *bottomLayout;
+  QHBoxLayout *bottomLayout, *flowControlLayout;
   QFormLayout *leftLlayout;
   QGroupBox *paramGroup;
-  QTextEdit *RecvArea, *SendArea;
+  QPlainTextEdit *RecvArea, *SendArea;
   QPushButton *OpenButton, *SendButton, *ClearRecvButton, *ClearSendButton;
   QCheckBox *NewLineBox, *TimerBox, *HexSend, *HexRecv, *RTSBox, *DTRBox;
   QSpinBox *TimerSpin;
   QTimer *CheckTimer, *SendTimer;
   SerialController *serialController;
-  QThread SerialThr;
   QSettings settings;
+
+  static const char HEX_SEPARATOR{':'};
 
   bool isSendNewLine = false;
   bool isSendHex = false;
   bool isRecvHex = false;
   bool isOpened = false;
 
-  QString HexStringToString(QString hexstr); //解码16进制字符串
-  void ACtionAttachToSerial(bool set);
+  QByteArray HexStringToString(const QString &hexstr); //解码16进制字符串
+  char convertAsciiToHex(char ascii);
+  void ActionAttachToSerial(bool set);
 };
 
 #endif // MAINWIDGET_H
