@@ -29,7 +29,7 @@ class MainWidget : public QWidget
 
 public:
   MainWidget(QWidget *parent = 0);
-  void CheckSerials(bool firstCheck = true);
+  void CheckSerials();
   ~MainWidget();
   void SendContent();
   bool eventFilter(QObject *watched, QEvent *event);

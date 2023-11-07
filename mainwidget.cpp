@@ -207,7 +207,7 @@ MainWidget::MainWidget(QWidget *parent)
     connect(serialController, &SerialController::recvData, this, &MainWidget::getRecv);
 }
 
-void MainWidget::CheckSerials(bool firstCheck)
+void MainWidget::CheckSerials()
 {
     //不断检查可用串口列表，并与当前列表进行比较，若发生变化则重新生成列表
     emit sendDateTime(QDateTime::currentDateTime().toString(Qt::ISODate)); //更新状态栏时间
